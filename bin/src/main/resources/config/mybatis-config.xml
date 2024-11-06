@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE configuration
+        PUBLIC "-//mybatis.org//DTD Config 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-config.dtd">
+<configuration>
+    <typeAliases>
+        <package name="com.ssafy.enjoycamping.user.entity"/>
+        <package name="com.ssafy.enjoycamping.review.entity"/>
+        <package name="com.ssafy.enjoycamping.trip.attraction.entity"/>
+        <!-- 필요한 패키지를 계속 추가 -->
+    </typeAliases>
+	<mappers>
+		<mapper resource="mapper/user-mapper.xml"/>
+        <mapper resource="mapper/attraction-mapper.xml"/>
+        <mapper resource="mapper/contenttype-mapper.xml"/>
+	</mappers>
+</configuration>
