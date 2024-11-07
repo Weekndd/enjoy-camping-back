@@ -21,7 +21,7 @@ public enum BaseResponseStatus {
     WITHDRAW_USER(false, HttpStatus.BAD_REQUEST.value(), "탈퇴한 유저입니다."),
     NOT_EXIST_CONTENTTYPE(false, HttpStatus.BAD_REQUEST.value(), "존재하지 않는 컨텐츠 타입입니다."),
     NOT_EXIST_ATTRACTION(false, HttpStatus.BAD_REQUEST.value(), "존재하지 않는 관광지입니다."),
-
+    
 
 
     /**
@@ -32,7 +32,13 @@ public enum BaseResponseStatus {
     SERVER_ERROR(false, HttpStatus.INTERNAL_SERVER_ERROR.value(), "서버와의 연결에 실패하였습니다."),
     ENCRYPTION_ERROR(false, HttpStatus.INTERNAL_SERVER_ERROR.value(), "암호화에 실패하였습니다."),
     DECRYPTION_ERROR(false, HttpStatus.INTERNAL_SERVER_ERROR.value(), "복호화에 실패하였습니다."),
-    UNEXPECTED_ERROR(false, HttpStatus.INTERNAL_SERVER_ERROR.value(), "예상치 못한 에러가 발생했습니다.");
+    UNEXPECTED_ERROR(false, HttpStatus.INTERNAL_SERVER_ERROR.value(), "예상치 못한 에러가 발생했습니다."),
+    
+    /**
+     * Review
+     */
+    REVIEW_NOT_FOUND(false,HttpStatus.NOT_FOUND.value(),"존재하지 않는 리뷰입니다.");
+    
 
     private final boolean isSuccess;
     private final int code;

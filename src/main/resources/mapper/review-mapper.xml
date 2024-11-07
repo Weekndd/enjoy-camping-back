@@ -16,16 +16,39 @@
     </resultMap> -->
     
     <insert id="insert" parameterType="review" useGeneratedKeys="true" keyProperty="id">
-        INSERT INTO review (camping_id, writer_id, sido_code, gugun_code, title, content)
-        VALUES(#{campingId}, #{writerId}, #{sidoCode}, #{gugunCode}, #{title}, #{content})
+        INSERT INTO review 
+        	(camping_id, 
+        	writer_id, 
+        	sido_code, 
+        	gugun_code, 
+        	title, 
+        	content)
+        VALUES
+        	(#{campingId}, 
+        	#{writerId}, 
+        	#{sidoCode}, 
+        	#{gugunCode}, 
+        	#{title}, 
+        	#{content})
     </insert>
 
 	<select id="selectById" parameterType="int" resultType="review">
-		SELECT * FROM review WHERE id=#{id}
+		SELECT * 
+		FROM review 
+		WHERE id=#{id}
 	</select>
 	
 	<delete id="delete" parameterType="int">
-		DELETE FROM review WHERE id=#{id}
+		DELETE 
+		FROM review 
+		WHERE id=#{id}
 	</delete>
 
+	<update id="update" parameterType="review">
+		UPDATE review
+		SET title = #{title},
+        	content = #{content}
+		WHERE id = #{id}
+	</update>
+	
 </mapper>

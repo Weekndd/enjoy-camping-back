@@ -12,6 +12,7 @@ import com.ssafy.enjoycamping.review.entity.Review;
 public interface ReviewDao {
 	int insert(Review review);
 	Optional<Review> selectById(int id);
-	int delete(int id);
+	void delete(int id);
+	void update(Review review);
 }
 
