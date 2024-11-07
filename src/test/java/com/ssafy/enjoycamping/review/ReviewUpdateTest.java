@@ -45,7 +45,7 @@ class ReviewUpdateTest {
 		
 		//THEN
 		Review updatedReview = reviewDao.selectById(originReview.getId())
-				.orElseThrow(() -> new NotFoundException(BaseResponseStatus.REVIEW_NOT_FOUND));
+				.orElseThrow(() -> new NotFoundException(BaseResponseStatus.NOT_EXIST_REVIEW));
 		
 		assertFalse(updatedReview.getTitle() == originReview.getTitle());
 		

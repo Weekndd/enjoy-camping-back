@@ -51,4 +51,14 @@
 		WHERE id = #{id}
 	</update>
 	
+	<select id="selectAll" resultType="review">
+		SELECT *
+		FROM review
+	</select>
+	
+	<select id="selectByCampingId" parameterType="int" resultType="review">
+		SELECT *
+		FROM review
+		WHERE camping_id = #{campingId}
+	</select>
 </mapper>
