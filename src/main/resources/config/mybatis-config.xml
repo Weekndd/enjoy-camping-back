@@ -13,5 +13,6 @@
 		<mapper resource="mapper/user-mapper.xml"/>
         <mapper resource="mapper/attraction-mapper.xml"/>
         <mapper resource="mapper/contenttype-mapper.xml"/>
+        <mapper resource="mapper/review-mapper.xml"/>
 	</mappers>
 </configuration>
