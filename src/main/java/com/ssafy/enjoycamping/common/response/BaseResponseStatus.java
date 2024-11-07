@@ -21,6 +21,7 @@ public enum BaseResponseStatus {
     WITHDRAW_USER(false, HttpStatus.BAD_REQUEST.value(), "탈퇴한 유저입니다."),
     NOT_EXIST_CONTENTTYPE(false, HttpStatus.BAD_REQUEST.value(), "존재하지 않는 컨텐츠 타입입니다."),
     NOT_EXIST_ATTRACTION(false, HttpStatus.BAD_REQUEST.value(), "존재하지 않는 관광지입니다."),
+    NOT_EXIST_CAMPING(false, HttpStatus.BAD_REQUEST.value(), "존재하지 않는 캠핑장입니다."),
 
 
 

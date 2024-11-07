@@ -6,7 +6,6 @@ import org.apache.ibatis.type.Alias;
 import java.math.BigDecimal;
 
 @Getter
-@Setter
 @Builder
 @ToString
 @Alias("attraction")

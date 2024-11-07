@@ -9,6 +9,8 @@ import com.ssafy.enjoycamping.trip.attraction.dao.ContentTypeDao;
 import com.ssafy.enjoycamping.trip.attraction.dto.AttractionDto;
 import com.ssafy.enjoycamping.trip.attraction.entity.Attraction;
 import com.ssafy.enjoycamping.trip.attraction.entity.ContentType;
+import com.ssafy.enjoycamping.trip.camping.dao.CampingDao;
+import com.ssafy.enjoycamping.trip.camping.entity.Camping;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -21,10 +23,11 @@ public class AttractionService {
 
 	private final AttractionDao attractionDao;
 	private final ContentTypeDao contentTypeDao;
+	private final CampingDao campingDao;
 
 	public AttractionDto getAttraction(int id) throws BaseException {
 		Attraction attraction = attractionDao.selectById(id)
-				.orElseThrow(() -> new BadRequestException(BaseResponseStatus.NOT_EXIST_EMAIL));
+				.orElseThrow(() -> new BadRequestException(BaseResponseStatus.NOT_EXIST_ATTRACTION));
 		return AttractionDto.fromEntity(attraction);
 	}
 
@@ -46,7 +49,9 @@ public class AttractionService {
 	}
 
 	public List<AttractionDto> getNearByCampsite(int campingId, PagingAndSorting pagingAndSorting) throws BaseException {
-		// TODO: 테이블 Join 방식 말고 Camping Dao를 통해 campsite 조회하는 방식으로 수정해야 함.
+		Camping camping = campingDao.selectById(campingId)
+				.orElseThrow(() -> new BadRequestException(BaseResponseStatus.NOT_EXIST_CAMPING));
+
 		if ("distance".equals(pagingAndSorting.getOrder())) {
 			// 거리 기반으로 가까운 관광지 조회
 			return attractionDao.selectAttractionsByDistance(campingId, pagingAndSorting).stream()
