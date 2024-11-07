@@ -18,6 +18,8 @@ import com.ssafy.enjoycamping.review.dto.CreateReviewDto.ResponseCreateReviewDto
 import com.ssafy.enjoycamping.review.dto.ReviewDto;
 import com.ssafy.enjoycamping.review.dto.UpdateReviewDto;
 import com.ssafy.enjoycamping.review.entity.Review;
+import com.ssafy.enjoycamping.trip.camping.dao.CampingDao;
+import com.ssafy.enjoycamping.trip.camping.entity.Camping;
 import com.ssafy.enjoycamping.user.dao.UserDao;
 import com.ssafy.enjoycamping.user.entity.User;
 import com.ssafy.enjoycamping.user.util.JwtProvider;
@@ -30,11 +32,12 @@ import lombok.extern.slf4j.Slf4j;
 public class ReviewServiceImpl implements ReviewService {
 	private ReviewDao reviewDao;
 	private UserDao userDao;
-
+	private CampingDao campingDao;
 	
-	public ReviewServiceImpl(ReviewDao reviewDao, UserDao userDao) {
+	public ReviewServiceImpl(ReviewDao reviewDao, UserDao userDao, CampingDao campingDao) {
 		this.reviewDao = reviewDao;
 		this.userDao = userDao;
+		this.campingDao = campingDao;
 	}
 
 	@Override
@@ -54,7 +57,7 @@ public class ReviewServiceImpl implements ReviewService {
 	@Override
 	public ReviewDto getReview(int id) throws BaseException {
 		Review review = reviewDao.selectById(id)
-				.orElseThrow(() -> new NotFoundException(BaseResponseStatus.REVIEW_NOT_FOUND));
+				.orElseThrow(() -> new NotFoundException(BaseResponseStatus.NOT_EXIST_REVIEW));
 		return ReviewDto.fromEntity(review);
 	}
 
@@ -62,7 +65,7 @@ public class ReviewServiceImpl implements ReviewService {
 	public void deleteReview(int id) {
 		//TODO: 로그인 유저와 작성자 확인 후 맞으면 삭제하는 로직
 		Review review = reviewDao.selectById(id)
-				.orElseThrow(() -> new NotFoundException(BaseResponseStatus.REVIEW_NOT_FOUND));
+				.orElseThrow(() -> new NotFoundException(BaseResponseStatus.NOT_EXIST_REVIEW));
 		reviewDao.delete(id);
 	}
 
@@ -70,7 +73,7 @@ public class ReviewServiceImpl implements ReviewService {
 	public ReviewDto updateReview(UpdateReviewDto.RequestUpdateReviewDto request, int id) {
 		//TODO: 로그인 유저와 작성자 확인 후 맞으면 업데이트하는 로직
 		Review review = reviewDao.selectById(id)
-				.orElseThrow(() -> new NotFoundException(BaseResponseStatus.REVIEW_NOT_FOUND));
+				.orElseThrow(() -> new NotFoundException(BaseResponseStatus.NOT_EXIST_REVIEW));
 		
 		request.updateReview(review);
 		reviewDao.update(review);
@@ -86,6 +89,17 @@ public class ReviewServiceImpl implements ReviewService {
 		return reviews;
 	}
 	
+	@Override
+	public List<ReviewDto> getReviewsByCampingId(int campingId) throws BaseException{
+		Camping camping = campingDao.selectById(campingId)
+				.orElseThrow(()-> new NotFoundException(BaseResponseStatus.NOT_EXIST_CAMPING));
+		
+		List<ReviewDto> reviews = reviewDao.selectByCampingId(camping.getId())
+				.stream()
+				.map(ReviewDto::fromEntity)
+				.toList();
+		return reviews;
+	}
 	
 
 

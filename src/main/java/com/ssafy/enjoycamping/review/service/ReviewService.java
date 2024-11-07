@@ -13,4 +13,5 @@ public interface ReviewService {
 	void deleteReview(int id);
 	ReviewDto updateReview(UpdateReviewDto.RequestUpdateReviewDto request, int id);
 	List<ReviewDto> getReviews();
+	List<ReviewDto> getReviewsByCampingId(int campingId);
 }
