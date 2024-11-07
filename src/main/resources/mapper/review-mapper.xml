@@ -51,4 +51,9 @@
 		WHERE id = #{id}
 	</update>
 	
+	<select id="selectAll" resultType="review">
+		SELECT *
+		FROM review
+	</select>
+	
 </mapper>

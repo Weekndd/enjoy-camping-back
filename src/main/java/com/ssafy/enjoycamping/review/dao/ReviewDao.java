@@ -1,5 +1,6 @@
 package com.ssafy.enjoycamping.review.dao;
 
+import java.util.List;
 import java.util.Optional;
 
 import org.apache.ibatis.annotations.Mapper;
@@ -10,9 +11,10 @@ import com.ssafy.enjoycamping.review.entity.Review;
 
 @Mapper
 public interface ReviewDao {
-	int insert(Review review);
 	Optional<Review> selectById(int id);
-	void delete(int id);
+	List<Review> selectAll();
+	int insert(Review review);
 	void update(Review review);
+	void delete(int id);
 }
 

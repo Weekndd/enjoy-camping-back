@@ -1,5 +1,7 @@
 package com.ssafy.enjoycamping.review.controller;
 
+import java.util.List;
+
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
@@ -55,5 +57,10 @@ public class ReviewController {
 		return new BaseResponse<>(review);
 	}
 	
+	@GetMapping
+	public BaseResponse<List<ReviewDto>> getReviews() {
+		List<ReviewDto> reviews = reviewService.getReviews();
+		return new BaseResponse<>(reviews);
+	}
 	
 }

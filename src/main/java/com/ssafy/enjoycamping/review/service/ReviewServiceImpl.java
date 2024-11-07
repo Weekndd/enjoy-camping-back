@@ -1,6 +1,8 @@
 package com.ssafy.enjoycamping.review.service;
 
 
+import java.util.List;
+
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Primary;
 import org.springframework.stereotype.Service;
@@ -73,6 +75,15 @@ public class ReviewServiceImpl implements ReviewService {
 		request.updateReview(review);
 		reviewDao.update(review);
 		return ReviewDto.fromEntity(review);
+	}
+
+	@Override
+	public List<ReviewDto> getReviews() throws BaseException{
+		List<ReviewDto> reviews = reviewDao.selectAll()
+				.stream()
+				.map(ReviewDto::fromEntity)
+				.toList();
+		return reviews;
 	}
 	
 	
