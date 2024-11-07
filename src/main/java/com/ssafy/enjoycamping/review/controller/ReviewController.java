@@ -44,15 +44,15 @@ public class ReviewController {
 	}
 	
 	@DeleteMapping("/delete/{id}")
-	public BaseResponse<String> deleteReview(@PathVariable int id) {
+	public BaseResponse<Integer> deleteReview(@PathVariable int id) {
 		reviewService.deleteReview(id);
-		return new BaseResponse<>(BaseResponseStatus.SUCCESS);
+		return new BaseResponse<>(id);
 	}
 	
 	@PatchMapping("/update/{id}")
-	public BaseResponse<String> updateReview(@RequestBody UpdateReviewDto.RequestUpdateReviewDto request, @PathVariable int id) {
-		reviewService.updateReview(request, id);
-		return new BaseResponse(BaseResponseStatus.SUCCESS);
+	public BaseResponse<ReviewDto> updateReview(@RequestBody UpdateReviewDto.RequestUpdateReviewDto request, @PathVariable int id) {
+		ReviewDto review = reviewService.updateReview(request, id);
+		return new BaseResponse<>(review);
 	}
 	
 	

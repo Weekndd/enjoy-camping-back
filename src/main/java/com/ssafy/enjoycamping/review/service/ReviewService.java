@@ -9,5 +9,5 @@ public interface ReviewService {
 	CreateReviewDto.ResponseCreateReviewDto createReview(CreateReviewDto.RequestCreateReviewDto request);
 	ReviewDto getReview(int id);
 	void deleteReview(int id);
-	void updateReview(UpdateReviewDto.RequestUpdateReviewDto request, int id);
+	ReviewDto updateReview(UpdateReviewDto.RequestUpdateReviewDto request, int id);
 }

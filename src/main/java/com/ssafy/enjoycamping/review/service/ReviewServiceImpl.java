@@ -65,13 +65,14 @@ public class ReviewServiceImpl implements ReviewService {
 	}
 
 	@Override
-	public void updateReview(UpdateReviewDto.RequestUpdateReviewDto request, int id) {
+	public ReviewDto updateReview(UpdateReviewDto.RequestUpdateReviewDto request, int id) {
 		//TODO: 로그인 유저와 작성자 확인 후 맞으면 업데이트하는 로직
 		Review review = reviewDao.selectById(id)
 				.orElseThrow(() -> new NotFoundException(BaseResponseStatus.REVIEW_NOT_FOUND));
 		
 		request.updateReview(review);
 		reviewDao.update(review);
+		return ReviewDto.fromEntity(review);
 	}
 	
 	
