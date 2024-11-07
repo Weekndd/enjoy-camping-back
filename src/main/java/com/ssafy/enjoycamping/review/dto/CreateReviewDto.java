@@ -1,26 +1,16 @@
 package com.ssafy.enjoycamping.review.dto;
 
-import groovy.transform.ToString;
+import com.ssafy.enjoycamping.review.entity.Review;
+
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import lombok.ToString;
 
-//@ToString
-//@Getter
-//@Setter
-//@AllArgsConstructor
-//@NoArgsConstructor
+
 public class CreateReviewDto {
-//	private int campingId;
-//	private int writerId;
-//	private int sidoCode;
-//	private int gugunCode;
-//	private String title;
-//	private String content;
-
-
 	@ToString
 	@Getter
 	@Setter
@@ -32,12 +22,25 @@ public class CreateReviewDto {
 		private int gugunCode;
 		private String title;
 		private String content;
+		
+		public Review toEntity() {
+			return Review.builder()
+					.campingId(this.campingId)
+					.writerId(this.writerId)
+					.sidoCode(this.sidoCode)
+					.gugunCode(this.gugunCode)
+					.title(this.title)
+					.content(this.content)
+					.build();
+		}
 	}
 	
 	@ToString
 	@Getter
 	@Setter
+	@Builder
 	public static class ResponseCreateReviewDto {
 		private int id;
 	}
+	
 }
