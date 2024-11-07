@@ -7,6 +7,7 @@
         <package name="com.ssafy.enjoycamping.user.entity"/>
         <package name="com.ssafy.enjoycamping.review.entity"/>
         <package name="com.ssafy.enjoycamping.trip.attraction.entity"/>
+        <package name="com.ssafy.enjoycamping.trip.camping.entity"/>
         <!-- 필요한 패키지를 계속 추가 -->
     </typeAliases>
 	<mappers>
@@ -14,5 +15,6 @@
         <mapper resource="mapper/attraction-mapper.xml"/>
         <mapper resource="mapper/contenttype-mapper.xml"/>
         <mapper resource="mapper/review-mapper.xml"/>
+        <mapper resource="mapper/camping-mapper.xml"/>
 	</mappers>
 </configuration>
