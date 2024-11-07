@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ssafy.enjoycamping.user.dao.UserDao">
+
+    <select id="selectAll" resultType="user">
+        SELECT * FROM user
+    </select>
+
+    <select id="selectById" parameterType="int" resultType="user">
+        SELECT * FROM user WHERE id = #{id}
+    </select>
+
+    <select id="selectActiveById" parameterType="int" resultType="user">
+        SELECT * FROM user WHERE id = #{id} AND delete_flag = false
+    </select>
+
+    <select id="selectByEmail" parameterType="String" resultType="user">
+        SELECT * FROM user WHERE email = #{email}
+    </select>
+
+    <select id="selectActiveByEmail" parameterType="String" resultType="user">
+        SELECT * FROM user WHERE email = #{email} AND delete_flag = false
+    </select>
+
+    <insert id="insert" parameterType="user" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO user (email, password, name)
+        VALUES (#{email}, #{password}, #{name})
+    </insert>
+
+    <update id="update" parameterType="user">
+        UPDATE user
+        SET email = #{email}, password = #{password}, name = #{name}, delete_flag = #{deleteFlag}
+        WHERE id = #{id}
+    </update>
+</mapper>
