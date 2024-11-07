@@ -26,8 +26,8 @@ public enum BaseResponseStatus {
     /**
      * Review
      */
-    REVIEW_NOT_FOUND(false,HttpStatus.NOT_FOUND.value(),"존재하지 않는 리뷰입니다."),
-
+    NOT_EXIST_REVIEW(false,HttpStatus.NOT_FOUND.value(),"존재하지 않는 리뷰입니다."),
+    
 
     /**
      * 자유롭게 에러코드 추가
