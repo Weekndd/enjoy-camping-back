@@ -1,4 +1,4 @@
-package com.ssafy.enjoycamping;
+package com.ssafy.enjoycamping.review;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.*;
