@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+        
+<mapper namespace="com.ssafy.enjoycamping.review.dao.ReviewDao">
+
+<!--     <resultMap id="ReviewResultMap" type="review">
+        <id property="id" column="id"/>
+        <result property="campingId" column="camping_id"/>
+        <result property="writerId" column="writer_id"/>
+        <result property="sidoCode" column="sido_code"/>
+        <result property="gugunCode" column="gugun_code"/>
+        <result property="title" column="title"/>
+        <result property="content" column="content"/>
+    </resultMap> -->
+    
+    <insert id="insert" parameterType="review" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO review (camping_id, writer_id, sido_code, gugun_code, title, content)
+        VALUES(#{campingId}, #{writerId}, #{sidoCode}, #{gugunCode}, #{title}, #{content})
+    </insert>
+
+	<select id="selectById" parameterType="int" resultType="review">
+		SELECT * FROM review WHERE id=#{id}
+	</select>
+	
+	<delete id="delete" parameterType="int">
+		DELETE FROM review WHERE id=#{id}
+	</delete>
+
+</mapper>
