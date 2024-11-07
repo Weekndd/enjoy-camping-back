@@ -2,12 +2,12 @@ package com.ssafy.enjoycamping.review.entity;
 
 import org.apache.ibatis.type.Alias;
 
-import groovy.transform.ToString;
-import groovy.transform.builder.Builder;
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import lombok.ToString;
 
 @Getter
 @Setter
@@ -24,7 +24,7 @@ public class Review {
 	private int gugunCode;
 	private String title;
 	private String content;
-	private String ctreateAt;
+	private String createAt;
 	private String updatedAt;
 }
 
