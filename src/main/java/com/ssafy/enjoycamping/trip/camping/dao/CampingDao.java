@@ -13,7 +13,7 @@ import java.util.Optional;
 @Transactional(readOnly = true)
 public interface CampingDao {
     Optional<Camping> selectById(int id);
-    List<Camping> searchCampings(String keyword, Integer sidoCode, Integer gugunCode, PagingAndSorting pagingAndSorting);
+    List<Camping> selectByCondition(String keyword, Integer sidoCode, Integer gugunCode, PagingAndSorting pagingAndSorting);
     List<Camping> selectCampingsByDistance(int attractionId, PagingAndSorting pagingAndSorting);
     List<Camping> selectCampingsInSameGugun(int attractionId, PagingAndSorting pagingAndSorting);
 }
