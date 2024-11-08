@@ -2,6 +2,9 @@ package com.ssafy.enjoycamping.review.controller;
 
 import java.util.List;
 
+import org.springframework.http.HttpStatus;
+import org.springframework.http.HttpStatusCode;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
@@ -12,6 +15,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.ssafy.enjoycamping.common.response.BaseResponse;
+import com.ssafy.enjoycamping.common.response.BaseResponseStatus;
 import com.ssafy.enjoycamping.review.dto.CreateReviewDto;
 import com.ssafy.enjoycamping.review.dto.ReviewDto;
 import com.ssafy.enjoycamping.review.dto.UpdateReviewDto;
@@ -67,5 +71,7 @@ public class ReviewController {
 		List<ReviewDto> reviews = reviewService.getReviewsByCampingId(campingId);
 		return new BaseResponse<>(reviews);
 	}
+	
+	
 	
 }

@@ -61,4 +61,24 @@
 		FROM review
 		WHERE camping_id = #{campingId}
 	</select>
+	
+	<select id="selectByCondition" parameterType="map" resultType="Review">
+	    SELECT r.*
+	    FROM review r
+	    JOIN sidos s ON s.sido_code = r.sido_code
+	    JOIN guguns g ON g.gugun_code = r.gugun_code
+	    <where>
+	        <if test="sidoCode != null">
+	            r.sido_code = #{sidoCode}
+	        </if>
+	        <if test="gugunCode != null">
+	            AND r.gugun_code = #{gugunCode}
+	        </if>
+	        <if test="keyword != null and keyword != ''">
+	            AND (r.title LIKE CONCAT('%', #{keyword}, '%') 
+	                 OR r.content LIKE CONCAT('%', #{keyword}, '%'))
+	        </if>
+	    </where>
+	</select>
+	
 </mapper>
