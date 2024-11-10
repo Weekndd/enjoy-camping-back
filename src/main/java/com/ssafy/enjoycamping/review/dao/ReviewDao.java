@@ -4,9 +4,7 @@ import java.util.List;
 import java.util.Optional;
 
 import org.apache.ibatis.annotations.Mapper;
-import org.springframework.transaction.annotation.Transactional;
-
-import com.ssafy.enjoycamping.review.dto.CreateReviewDto;
+import com.ssafy.enjoycamping.common.util.PagingAndSorting;
 import com.ssafy.enjoycamping.review.entity.Review;
 
 @Mapper
@@ -17,6 +15,7 @@ public interface ReviewDao {
 	int insert(Review review);
 	void update(Review review);
 	void delete(int id);
+	List<Review> selectByCondition(String keyword, Integer sidoCode, Integer gugunCode, PagingAndSorting pagingAndSorting);
 	
 }
 
