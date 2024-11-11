@@ -1,7 +1,8 @@
 package com.ssafy.enjoycamping.review.dto;
 
 
-import com.ssafy.enjoycamping.review.dto.CreateReviewDto;
+import java.time.LocalDateTime;
+
 import com.ssafy.enjoycamping.review.entity.Review;
 
 import lombok.AllArgsConstructor;
@@ -25,8 +26,8 @@ public class ReviewDto {
 	private int gugunCode;
 	private String title;
 	private String content;
-	private String createAt;
-	private String updatedAt;
+	private LocalDateTime createdAt;
+	private LocalDateTime updatedAt;
 	
 	public static ReviewDto fromEntity(Review review) {
 		return ReviewDto.builder()
@@ -37,7 +38,7 @@ public class ReviewDto {
 				.gugunCode(review.getGugunCode())
 				.title(review.getTitle())
 				.content(review.getContent())
-				.createAt(review.getCreateAt())
+				.createdAt(review.getCreatedAt())
 				.updatedAt(review.getUpdatedAt())
 				.build();
 	}
