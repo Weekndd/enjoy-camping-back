@@ -5,15 +5,16 @@
         
 <mapper namespace="com.ssafy.enjoycamping.review.dao.ReviewDao">
 
-<!--     <resultMap id="ReviewResultMap" type="review">
+	<resultMap id="ReviewResultMap" type="review">
         <id property="id" column="id"/>
         <result property="campingId" column="camping_id"/>
         <result property="writerId" column="writer_id"/>
         <result property="sidoCode" column="sido_code"/>
         <result property="gugunCode" column="gugun_code"/>
         <result property="title" column="title"/>
-        <result property="content" column="content"/>
-    </resultMap> -->
+        <result property="createdAt" column="created_at"/>
+        <result property="updatedAt" column="updated_at"/>
+    </resultMap>
     
     <insert id="insert" parameterType="review" useGeneratedKeys="true" keyProperty="id">
         INSERT INTO review 
@@ -32,7 +33,7 @@
         	#{content})
     </insert>
 
-	<select id="selectById" parameterType="int" resultType="review">
+	<select id="selectById" parameterType="int" resultMap="ReviewResultMap">
 		SELECT * 
 		FROM review 
 		WHERE id=#{id}
@@ -51,18 +52,18 @@
 		WHERE id = #{id}
 	</update>
 	
-	<select id="selectAll" resultType="review">
+	<select id="selectAll" resultMap="ReviewResultMap">
 		SELECT *
 		FROM review
 	</select>
 	
-	<select id="selectByCampingId" parameterType="int" resultType="review">
+	<select id="selectByCampingId" parameterType="int" resultMap="ReviewResultMap">
 		SELECT *
 		FROM review
 		WHERE camping_id = #{campingId}
 	</select>
 	
-	<select id="selectByCondition" resultType="review">
+	<select id="selectByCondition" resultMap="ReviewResultMap">
 	    SELECT *
 	    FROM review
 	    WHERE 1=1
@@ -92,4 +93,9 @@
 	        </if>
 	</select>
 	
+	<select id="selectByUserId" parameterType="int" resultMap="ReviewResultMap">
+		SELECT *
+		FROM review
+		WHERE writer_id = #{userId}
+	</select>
 </mapper>

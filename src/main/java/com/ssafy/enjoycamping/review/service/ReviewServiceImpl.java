@@ -103,8 +103,8 @@ public class ReviewServiceImpl implements ReviewService {
 	}
 
 	@Override
-	public List<ReviewDto> searchReviews(String keyword, String sido, String gugun,
-			PagingAndSorting pagingAndSorting) throws BaseException{
+	public List<ReviewDto> getReviewsByCondition(String keyword, String sido, String gugun,
+			PagingAndSorting pagingAndSorting) throws BaseException {
 		Integer sidoCode = (sido != null && !sido.isEmpty()) ? Integer.parseInt(sido) : null;
         Integer gugunCode = (gugun != null && !gugun.isEmpty()) ? Integer.parseInt(gugun) : null;
         
@@ -114,6 +114,15 @@ public class ReviewServiceImpl implements ReviewService {
 				.map(ReviewDto::fromEntity)
 				.toList();
 	}
+	
+	@Override
+	public List<ReviewDto> getReviewsByUserId(int userId) {
+		List<Review> reviews = reviewDao.selectByUserId(userId);
+		return reviews.stream()
+				.map(ReviewDto::fromEntity)
+				.toList();
+	}
+	
 	
 
 

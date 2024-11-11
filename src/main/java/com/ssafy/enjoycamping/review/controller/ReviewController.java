@@ -2,9 +2,6 @@ package com.ssafy.enjoycamping.review.controller;
 
 import java.util.List;
 
-import org.springframework.http.HttpStatus;
-import org.springframework.http.HttpStatusCode;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
@@ -63,20 +60,14 @@ public class ReviewController {
 		return new BaseResponse<>(review);
 	}
 	
-	@GetMapping
-	public BaseResponse<List<ReviewDto>> getReviews() {
-		List<ReviewDto> reviews = reviewService.getReviews();
-		return new BaseResponse<>(reviews);
-	}
-	
 	@GetMapping("/camping/{id}")
 	public BaseResponse<List<ReviewDto>> findReviewsByCampingId(@PathVariable int campingId) {
 		List<ReviewDto> reviews = reviewService.getReviewsByCampingId(campingId);
 		return new BaseResponse<>(reviews);
 	}
 	
-	@GetMapping("review/{keyword}/{sido}/{gugun}") //주소값 확인할 것
-	public BaseResponse<List<ReviewDto>> searchReviews(
+	@GetMapping
+	public BaseResponse<List<ReviewDto>> getReviews ( //조건으로 검색 및 페이징/정렬 추가
 			@RequestParam(value = "keyword", required = false) String keyword,
 			@RequestParam(value = "sido", required = false) String sido,
 			@RequestParam(value = "gugun", required = false) String gugun,
@@ -85,7 +76,13 @@ public class ReviewController {
             @RequestParam(defaultValue = "id") String order,
             @RequestParam(defaultValue = "asc") String sort) {
 		PagingAndSorting pagingAndSorting = new PagingAndSorting(pageNo, pageCnt, order, sort);
-		List<ReviewDto> reviews = reviewService.searchReviews(keyword, sido, gugun, pagingAndSorting);
+		List<ReviewDto> reviews = reviewService.getReviewsByCondition(keyword, sido, gugun, pagingAndSorting);
+		return new BaseResponse<>(reviews);
+	}
+	
+	@GetMapping("/users/{userId}")
+	public BaseResponse<List<ReviewDto>> getReivewsByUserId(@PathVariable int userId) {
+		List<ReviewDto> reviews = reviewService.getReviewsByUserId(userId);
 		return new BaseResponse<>(reviews);
 	}
 	
