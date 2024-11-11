@@ -42,7 +42,7 @@ public class AttractionService {
 			contentTypeId = type.getContentTypeId();
 		}
 
-		List<Attraction> attractions = attractionDao.searchAttractions(keyword, sidoCodeInt, gugunCodeInt, contentTypeId, pagingAndSorting);
+		List<Attraction> attractions = attractionDao.selectByCondition(keyword, sidoCodeInt, gugunCodeInt, contentTypeId, pagingAndSorting);
 		return attractions.stream()
 				.map(AttractionDto::fromEntity)
 				.collect(Collectors.toList());

@@ -12,6 +12,7 @@ import com.ssafy.enjoycamping.common.exception.BaseException;
 import com.ssafy.enjoycamping.common.exception.NotFoundException;
 import com.ssafy.enjoycamping.common.exception.UnauthorizedException;
 import com.ssafy.enjoycamping.common.response.BaseResponseStatus;
+import com.ssafy.enjoycamping.common.util.PagingAndSorting;
 import com.ssafy.enjoycamping.review.dao.ReviewDao;
 import com.ssafy.enjoycamping.review.dto.CreateReviewDto;
 import com.ssafy.enjoycamping.review.dto.CreateReviewDto.ResponseCreateReviewDto;
@@ -99,6 +100,19 @@ public class ReviewServiceImpl implements ReviewService {
 				.map(ReviewDto::fromEntity)
 				.toList();
 		return reviews;
+	}
+
+	@Override
+	public List<ReviewDto> searchReviews(String keyword, String sido, String gugun,
+			PagingAndSorting pagingAndSorting) throws BaseException{
+		Integer sidoCode = (sido != null && !sido.isEmpty()) ? Integer.parseInt(sido) : null;
+        Integer gugunCode = (gugun != null && !gugun.isEmpty()) ? Integer.parseInt(gugun) : null;
+        
+		List<Review> reviews = reviewDao.selectByCondition(keyword, sidoCode, gugunCode, pagingAndSorting);
+		
+		return reviews.stream()
+				.map(ReviewDto::fromEntity)
+				.toList();
 	}
 	
 

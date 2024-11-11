@@ -32,7 +32,7 @@ public class CampingServiceImpl implements CampingService{
         Integer sidoCodeInt = (sidoCode != null && !sidoCode.isEmpty()) ? Integer.parseInt(sidoCode) : null;
         Integer gugunCodeInt = (gugunCode != null && !gugunCode.isEmpty()) ? Integer.parseInt(gugunCode) : null;
 
-        List<Camping> campings = campingDao.searchCampings(keyword, sidoCodeInt, gugunCodeInt, pagingAndSorting);
+        List<Camping> campings = campingDao.selectByCondition(keyword, sidoCodeInt, gugunCodeInt, pagingAndSorting);
         return campings.stream()
                 .map(CampingDto::fromEntity)
                 .collect(Collectors.toList());

@@ -27,7 +27,7 @@
     </select>
 
     <!-- 동적 SQL을 사용하여 조건에 따른 명소 검색 -->
-    <select id="searchCampings" resultMap="CampingResultMap">
+    <select id="selectByCondition" resultMap="CampingResultMap">
         SELECT * FROM camping
         WHERE 1=1
         <if test="keyword != null and keyword != ''">

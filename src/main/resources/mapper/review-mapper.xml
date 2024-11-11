@@ -61,4 +61,35 @@
 		FROM review
 		WHERE camping_id = #{campingId}
 	</select>
+	
+	<select id="selectByCondition" resultType="review">
+	    SELECT *
+	    FROM review
+	    WHERE 1=1
+		    <if test="keyword != null and keyword != ''">
+	            AND (title LIKE CONCAT('%', #{keyword}, '%')
+	                OR content LIKE CONCAT('%', #{keyword}, '%'))
+	        </if>
+	        <if test="sidoCode != null and sidoCode != ''">
+            	AND sido_code = #{sidoCode}
+        	</if>
+        	<if test="gugunCode != null and gugunCode != ''">
+            	AND gugun_code = #{gugunCode}
+        	</if>
+        	<!-- 동적 정렬 처리 -->
+	        <choose>
+	            <when test="pagingAndSorting.order != null and pagingAndSorting.sort != null">
+	                ORDER BY ${pagingAndSorting.order} ${pagingAndSorting.sort}
+	            </when>
+	            <otherwise>
+	                ORDER BY name ASC  <!-- 기본 정렬 조건 설정 -->
+	            </otherwise>
+	        </choose>
+	
+	        <!-- 페이징 처리 -->
+	        <if test="pagingAndSorting.pageCnt > 0">
+	            LIMIT #{pagingAndSorting.pageCnt} OFFSET #{pagingAndSorting.offset}
+	        </if>
+	</select>
+	
 </mapper>
