@@ -2,6 +2,7 @@ package com.ssafy.enjoycamping.trip.camping.controller;
 
 import com.ssafy.enjoycamping.common.response.BaseResponse;
 import com.ssafy.enjoycamping.common.util.PagingAndSorting;
+import com.ssafy.enjoycamping.trip.camping.dto.CampingDistanceDto;
 import com.ssafy.enjoycamping.trip.camping.dto.CampingDto;
 import com.ssafy.enjoycamping.trip.camping.service.CampingService;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -35,29 +36,31 @@ public class CampingController {
     @GetMapping
     public BaseResponse<List<CampingDto>> searchCampings(
             @RequestParam(value = "keyword", required = false) String keyword,
-            @RequestParam(value = "sido", required = false) String sidoCode,
-            @RequestParam(value = "gugun", required = false) String gugunCode,
-            @RequestParam(defaultValue = "0") int pageNo,
-            @RequestParam(defaultValue = "10") int pageCnt,
+            @RequestParam(value = "sido", required = false) Integer sidoCode,
+            @RequestParam(value = "gugun", required = false) Integer gugunCode,
+            @RequestParam(defaultValue = "1") int pageNo,
+            @RequestParam(defaultValue = "9") int pageCnt,
             @RequestParam(defaultValue = "name") String order,
             @RequestParam(defaultValue = "asc") String sort){
         PagingAndSorting pagingAndSorting = new PagingAndSorting(pageNo, pageCnt, order, sort);
         List<CampingDto> campings = campingService.searchCampings(keyword, sidoCode, gugunCode, pagingAndSorting);
-        return new BaseResponse<>(campings);
+        int totalCount = campingService.countByCondition(keyword, sidoCode, gugunCode);
+
+        return new BaseResponse<>(campings, totalCount);
     }
 
     /**
      * 관광지 근처 캠핑장 조회
      */
     @GetMapping("/attractions/{index}")
-    public BaseResponse<List<CampingDto>> getNearByCampsite(
+    public BaseResponse<List<CampingDistanceDto>> getNearByCampsite(
             @PathVariable("index") int index,
-            @RequestParam(defaultValue = "0") int pageNo,
-            @RequestParam(defaultValue = "10") int pageCnt,
-            @RequestParam(defaultValue = "distance") String order,
-            @RequestParam(defaultValue = "asc") String sort){
-        PagingAndSorting pagingAndSorting = new PagingAndSorting(pageNo, pageCnt, order, sort);
-        List<CampingDto> campings = campingService.getNearByAttraction(index, pagingAndSorting);
-        return new BaseResponse<>(campings);
+            @RequestParam(defaultValue = "1") int pageNo,
+            @RequestParam(defaultValue = "9") int pageCnt){
+        PagingAndSorting pagingAndSorting = new PagingAndSorting(pageNo, pageCnt);
+        List<CampingDistanceDto> campings = campingService.getNearByAttraction(index, pagingAndSorting);
+        int totalCount = campingService.countInSameGugun(index);
+
+        return new BaseResponse<>(campings, totalCount);
     }
 }

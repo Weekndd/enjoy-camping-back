@@ -17,6 +17,12 @@ public class PagingAndSorting {
         this.pageCnt = pageCnt;
         this.order = order;
         this.sort = sort;
-        this.offset = pageNo * pageCnt; // Offset 계산
+        this.offset = (pageNo - 1) * pageCnt; // Offset 계산
+    }
+
+    public PagingAndSorting(int pageNo, int pageCnt) {
+        this.pageNo = pageNo;
+        this.pageCnt = pageCnt;
+        this.offset = (pageNo - 1) * pageCnt; // Offset 계산
     }
 }
