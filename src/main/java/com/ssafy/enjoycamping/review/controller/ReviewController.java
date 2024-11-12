@@ -34,7 +34,6 @@ public class ReviewController {
 		this.reviewService = reviewService;
 	}
 
-
 	@PostMapping
 	public BaseResponse<CreateReviewDto.ResponseCreateReviewDto> createReview(@RequestBody CreateReviewDto.RequestCreateReviewDto request) {
 		CreateReviewDto.ResponseCreateReviewDto response = reviewService.createReview(request);
@@ -71,10 +70,10 @@ public class ReviewController {
 			@RequestParam(value = "keyword", required = false) String keyword,
 			@RequestParam(value = "sido", required = false) String sido,
 			@RequestParam(value = "gugun", required = false) String gugun,
-			@RequestParam(defaultValue = "0") int pageNo,
-            @RequestParam(defaultValue = "10") int pageCnt,
-            @RequestParam(defaultValue = "id") String order,
-            @RequestParam(defaultValue = "asc") String sort) {
+			@RequestParam(defaultValue = "1") int pageNo,
+            @RequestParam(defaultValue = "5") int pageCnt,
+            @RequestParam(defaultValue = "created_at") PagingAndSorting.ReviewOrder order,
+            @RequestParam(defaultValue = "desc") PagingAndSorting.Sort sort) {
 		PagingAndSorting pagingAndSorting = new PagingAndSorting(pageNo, pageCnt, order, sort);
 		List<ReviewDto> reviews = reviewService.getReviewsByCondition(keyword, sido, gugun, pagingAndSorting);
 		return new BaseResponse<>(reviews);

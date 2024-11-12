@@ -9,6 +9,7 @@
         <package name="com.ssafy.enjoycamping.trip.attraction.entity"/>
         <package name="com.ssafy.enjoycamping.trip.camping.entity"/>
         <package name="com.ssafy.enjoycamping.trip.sidogugun.entity"/>
+        <package name="com.ssafy.enjoycamping.trip.contenttype.entity"/>
         <!-- 필요한 패키지를 계속 추가 -->
     </typeAliases>
 	<mappers>

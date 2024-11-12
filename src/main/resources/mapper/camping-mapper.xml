@@ -21,12 +21,30 @@
         <result property="homepageUrl" column="homepage_url"/>
     </resultMap>
 
-    <!-- ID로 명소 조회 -->
+    <!-- CampingWithDistanceResultMap 설정 -->
+    <resultMap id="CampingWithDistanceResultMap" type="com.ssafy.enjoycamping.trip.camping.dto.CampingDistanceDto">
+        <id property="id" column="id"/>
+        <result property="name" column="name"/>
+        <result property="sidoName" column="sido_name"/>
+        <result property="sidoCode" column="sido_code"/>
+        <result property="gugunName" column="gugun_name"/>
+        <result property="gugunCode" column="gugun_code"/>
+        <result property="detailAddress" column="detail_address"/>
+        <result property="latitude" column="latitude"/>
+        <result property="longitude" column="longitude"/>
+        <result property="imageUrl" column="image_url"/>
+        <result property="introduction" column="introduction"/>
+        <result property="telephone" column="telephone"/>
+        <result property="homepageUrl" column="homepage_url"/>
+        <result property="distance" column="distance"/>
+    </resultMap>
+
+    <!-- ID로 캠핑장 조회 -->
     <select id="selectById" parameterType="Integer" resultMap="CampingResultMap">
         SELECT * FROM camping WHERE id = #{id}
     </select>
 
-    <!-- 동적 SQL을 사용하여 조건에 따른 명소 검색 -->
+    <!-- 동적 SQL을 사용하여 조건에 따른 캠핑장 검색 -->
     <select id="selectByCondition" resultMap="CampingResultMap">
         SELECT * FROM camping
         WHERE 1=1
@@ -58,27 +76,35 @@
         </if>
     </select>
 
-    <!-- 거리 기준으로 가까운 관광지 조회 -->
-    <select id="selectCampingsByDistance" resultMap="CampingResultMap">
-        SELECT c.*,
-            (6371 * ACOS(COS(RADIANS(a.latitude))
-            * COS(RADIANS(c.latitude))
-            * COS(RADIANS(c.longitude) - RADIANS(a.longitude))
-            + SIN(RADIANS(a.latitude))
-            * SIN(RADIANS(c.latitude)))) AS distance
-        FROM camping c
-        JOIN attractions a ON a.no = #{attractionId}
-        ORDER BY distance ASC
-
-        <!-- 페이징 처리 -->
-        <if test="pagingAndSorting.pageCnt > 0">
-            LIMIT #{pagingAndSorting.pageCnt} OFFSET #{pagingAndSorting.offset}
+    <!-- 동적 조건에 따른 캠핑장 개수 조회 -->
+    <select id="countByCondition" resultType="int">
+        SELECT COUNT(*)
+        FROM camping
+        WHERE 1=1
+        <if test="keyword != null and keyword != ''">
+            AND (name LIKE CONCAT('%', #{keyword}, '%')
+            OR detail_address LIKE CONCAT('%', #{keyword}, '%')
+            OR introduction LIKE CONCAT('%', #{keyword}, '%'))
+        </if>
+        <if test="sidoCode != null and sidoCode != ''">
+            AND sido_code = #{sidoCode}
+        </if>
+        <if test="gugunCode != null and gugunCode != ''">
+            AND gugun_code = #{gugunCode}
         </if>
     </select>
 
-    <!-- 같은 구군에 위치한 관광지 조회 -->
-    <select id="selectCampingsInSameGugun" resultMap="CampingResultMap">
-        SELECT c.*
+    <!-- 같은 구군에 위치한 관광지와의 거리 순으로 조회 -->
+    <select id="selectCampingsInSameGugun" resultMap="CampingWithDistanceResultMap">
+        SELECT
+            c.id, c.name, c.sido_name, c.sido_code, c.gugun_name, c.gugun_code,
+            c.detail_address, c.latitude, c.longitude, c.image_url, c.introduction,
+            c.telephone, c.homepage_url,
+            CAST((6371 * ACOS(COS(RADIANS(a.latitude))
+            * COS(RADIANS(c.latitude))
+            * COS(RADIANS(c.longitude) - RADIANS(a.longitude))
+            + SIN(RADIANS(a.latitude))
+            * SIN(RADIANS(c.latitude)))) AS DOUBLE) AS distance
         FROM camping c
         JOIN attractions a ON a.no = #{attractionId}
         WHERE a.area_code = c.sido_code
@@ -89,11 +115,23 @@
             <when test="pagingAndSorting.order != null and pagingAndSorting.sort != null">
                 ORDER BY ${pagingAndSorting.order} ${pagingAndSorting.sort}
             </when>
+            <otherwise>
+                ORDER BY distance ASC  <!-- 기본 정렬 조건 설정 -->
+            </otherwise>
         </choose>
 
         <!-- 페이징 처리 -->
         <if test="pagingAndSorting.pageCnt > 0">
             LIMIT #{pagingAndSorting.pageCnt} OFFSET #{pagingAndSorting.offset}
         </if>
+    </select>
+
+    <!-- 같은 구군에 위치한 캠핑장의 개수 조회 -->
+    <select id="countInSameGugun" resultType="int">
+        SELECT COUNT(*)
+        FROM camping c
+        JOIN attractions a ON a.no = #{attractionId}
+        WHERE a.area_code = c.sido_code
+        AND a.si_gun_gu_code = c.gugun_code
     </select>
 </mapper>

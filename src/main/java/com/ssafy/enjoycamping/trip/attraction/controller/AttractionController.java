@@ -1,11 +1,10 @@
 package com.ssafy.enjoycamping.trip.attraction.controller;
 
 import com.ssafy.enjoycamping.common.response.BaseResponse;
-import com.ssafy.enjoycamping.common.response.BaseResponseStatus;
 import com.ssafy.enjoycamping.common.util.PagingAndSorting;
+import com.ssafy.enjoycamping.trip.attraction.dto.AttractionDistanceDto;
 import com.ssafy.enjoycamping.trip.attraction.dto.AttractionDto;
 import com.ssafy.enjoycamping.trip.attraction.service.AttractionService;
-import com.ssafy.enjoycamping.user.dto.*;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -37,30 +36,34 @@ public class AttractionController {
     @GetMapping
     public BaseResponse<List<AttractionDto>> searchAttractions(
             @RequestParam(value = "keyword", required = false) String keyword,
-            @RequestParam(value = "sido", required = false) String sidoCode,
-            @RequestParam(value = "gugun", required = false) String gugunCode,
-            @RequestParam(value = "contentType", required = false) String contentType,
-            @RequestParam(defaultValue = "0") int pageNo,
-            @RequestParam(defaultValue = "10") int pageCnt,
-            @RequestParam(defaultValue = "title") String order,
-            @RequestParam(defaultValue = "asc") String sort){
+            @RequestParam(value = "sido", required = false) Integer sidoCode,
+            @RequestParam(value = "gugun", required = false) Integer gugunCode,
+            @RequestParam(value = "contentType", required = false) List<Integer> contentType,
+            @RequestParam(defaultValue = "1") int pageNo,
+            @RequestParam(defaultValue = "9") int pageCnt,
+            @RequestParam(defaultValue = "title") PagingAndSorting.AttractionOrder order,
+            @RequestParam(defaultValue = "asc") PagingAndSorting.Sort sort){
         PagingAndSorting pagingAndSorting = new PagingAndSorting(pageNo, pageCnt, order, sort);
         List<AttractionDto> attractions = attractionService.searchAttractions(keyword, sidoCode, gugunCode, contentType, pagingAndSorting);
-        return new BaseResponse<>(attractions);
+        int totalCount = attractionService.countByCondition(keyword, sidoCode, gugunCode, contentType);
+
+        return new BaseResponse<>(attractions, totalCount);
     }
 
     /**
      * 캠핑장 근처 관광지 조회
      */
     @GetMapping("/campings/{index}")
-    public BaseResponse<List<AttractionDto>> getNearByCampsite(
+    public BaseResponse<List<AttractionDistanceDto>> getNearByCampsite(
             @PathVariable("index") int index,
-            @RequestParam(defaultValue = "0") int pageNo,
-            @RequestParam(defaultValue = "10") int pageCnt,
-            @RequestParam(defaultValue = "distance") String order,
-            @RequestParam(defaultValue = "asc") String sort){
+            @RequestParam(defaultValue = "1") int pageNo,
+            @RequestParam(defaultValue = "9") int pageCnt,
+            @RequestParam(defaultValue = "distance") PagingAndSorting.DistanceOrder order,
+            @RequestParam(defaultValue = "asc") PagingAndSorting.Sort sort){
         PagingAndSorting pagingAndSorting = new PagingAndSorting(pageNo, pageCnt, order, sort);
-        List<AttractionDto> attractions = attractionService.getNearByCampsite(index, pagingAndSorting);
-        return new BaseResponse<>(attractions);
+        List<AttractionDistanceDto> attractions = attractionService.getNearByCampsite(index, pagingAndSorting);
+        int totalCount = attractionService.countInSameGugun(index);
+
+        return new BaseResponse<>(attractions, totalCount);
     }
 }
