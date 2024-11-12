@@ -5,16 +5,14 @@ import com.ssafy.enjoycamping.common.exception.BaseException;
 import com.ssafy.enjoycamping.common.response.BaseResponseStatus;
 import com.ssafy.enjoycamping.common.util.PagingAndSorting;
 import com.ssafy.enjoycamping.trip.attraction.dao.AttractionDao;
-import com.ssafy.enjoycamping.trip.attraction.dao.ContentTypeDao;
 import com.ssafy.enjoycamping.trip.attraction.dto.AttractionDto;
 import com.ssafy.enjoycamping.trip.attraction.entity.Attraction;
-import com.ssafy.enjoycamping.trip.attraction.entity.ContentType;
 import com.ssafy.enjoycamping.trip.camping.dao.CampingDao;
 import com.ssafy.enjoycamping.trip.camping.entity.Camping;
+import com.ssafy.enjoycamping.trip.contenttype.dao.ContentTypeDao;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 

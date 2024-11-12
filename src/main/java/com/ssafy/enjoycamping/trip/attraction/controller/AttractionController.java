@@ -1,11 +1,9 @@
 package com.ssafy.enjoycamping.trip.attraction.controller;
 
 import com.ssafy.enjoycamping.common.response.BaseResponse;
-import com.ssafy.enjoycamping.common.response.BaseResponseStatus;
 import com.ssafy.enjoycamping.common.util.PagingAndSorting;
 import com.ssafy.enjoycamping.trip.attraction.dto.AttractionDto;
 import com.ssafy.enjoycamping.trip.attraction.service.AttractionService;
-import com.ssafy.enjoycamping.user.dto.*;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;

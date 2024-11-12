@@ -2,15 +2,15 @@
 <!DOCTYPE mapper
         PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
-<mapper namespace="com.ssafy.enjoycamping.trip.attraction.dao.ContentTypeDao">
+<mapper namespace="com.ssafy.enjoycamping.trip.contenttype.dao.ContentTypeDao">
 
-    <!-- 이름으로 ContentType 조회 -->
-    <select id="selectByName" parameterType="string" resultType="contentType">
-        SELECT * FROM contenttypes WHERE content_type_name = #{name}
+    <!-- ContentType 전체 조회 -->
+    <select id="selectAll" resultType="contenttype">
+        SELECT * FROM contenttypes
     </select>
 
     <!-- id으로 ContentType 조회 -->
-    <select id="selectById" parameterType="Integer" resultType="contentType">
+    <select id="selectById" parameterType="Integer" resultType="contenttype">
         SELECT * FROM contenttypes WHERE content_type_id = #{id}
     </select>
 
