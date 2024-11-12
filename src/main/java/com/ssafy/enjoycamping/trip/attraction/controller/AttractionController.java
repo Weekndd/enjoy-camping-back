@@ -41,11 +41,11 @@ public class AttractionController {
             @RequestParam(value = "contentType", required = false) List<Integer> contentType,
             @RequestParam(defaultValue = "1") int pageNo,
             @RequestParam(defaultValue = "9") int pageCnt,
-            @RequestParam(defaultValue = "title") String order,
-            @RequestParam(defaultValue = "asc") String sort){
+            @RequestParam(defaultValue = "title") PagingAndSorting.AttractionOrder order,
+            @RequestParam(defaultValue = "asc") PagingAndSorting.Sort sort){
         PagingAndSorting pagingAndSorting = new PagingAndSorting(pageNo, pageCnt, order, sort);
         List<AttractionDto> attractions = attractionService.searchAttractions(keyword, sidoCode, gugunCode, contentType, pagingAndSorting);
-        int totalCount = attractionService.countByCondition(keyword, sidoCode, gugunCode);
+        int totalCount = attractionService.countByCondition(keyword, sidoCode, gugunCode, contentType);
 
         return new BaseResponse<>(attractions, totalCount);
     }
@@ -57,8 +57,10 @@ public class AttractionController {
     public BaseResponse<List<AttractionDistanceDto>> getNearByCampsite(
             @PathVariable("index") int index,
             @RequestParam(defaultValue = "1") int pageNo,
-            @RequestParam(defaultValue = "9") int pageCnt){
-        PagingAndSorting pagingAndSorting = new PagingAndSorting(pageNo, pageCnt);
+            @RequestParam(defaultValue = "9") int pageCnt,
+            @RequestParam(defaultValue = "distance") PagingAndSorting.DistanceOrder order,
+            @RequestParam(defaultValue = "asc") PagingAndSorting.Sort sort){
+        PagingAndSorting pagingAndSorting = new PagingAndSorting(pageNo, pageCnt, order, sort);
         List<AttractionDistanceDto> attractions = attractionService.getNearByCampsite(index, pagingAndSorting);
         int totalCount = attractionService.countInSameGugun(index);
 

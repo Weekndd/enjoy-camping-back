@@ -109,7 +109,16 @@
         JOIN attractions a ON a.no = #{attractionId}
         WHERE a.area_code = c.sido_code
         AND a.si_gun_gu_code = c.gugun_code
-        ORDER BY distance ASC
+
+        <!-- 동적 정렬 처리 -->
+        <choose>
+            <when test="pagingAndSorting.order != null and pagingAndSorting.sort != null">
+                ORDER BY ${pagingAndSorting.order} ${pagingAndSorting.sort}
+            </when>
+            <otherwise>
+                ORDER BY distance ASC  <!-- 기본 정렬 조건 설정 -->
+            </otherwise>
+        </choose>
 
         <!-- 페이징 처리 -->
         <if test="pagingAndSorting.pageCnt > 0">
