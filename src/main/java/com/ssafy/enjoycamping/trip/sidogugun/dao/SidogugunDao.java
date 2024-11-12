@@ -5,7 +5,10 @@ import com.ssafy.enjoycamping.trip.sidogugun.entity.Sido;
 
 import java.util.List;
 
+import org.apache.ibatis.annotations.Mapper;
+
+@Mapper
 public interface SidogugunDao {
-	public List<Sido> findAllSido();
-	public List<Gugun> findGugunsBySido(int sidoCode);
+	public List<Sido> selectSidos();
+	public List<Gugun> selectGugunsBySidoId(int sidoCode);
 }
