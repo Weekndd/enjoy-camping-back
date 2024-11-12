@@ -14,7 +14,7 @@ import java.util.Optional;
 @Transactional(readOnly = true)
 public interface AttractionDao {
 	Optional<Attraction> selectById(int id);
-	List<Attraction> selectByCondition(String keyword, Integer sidoCode, Integer gugunCode, Integer contentTypeId, PagingAndSorting pagingAndSorting);
+	List<Attraction> selectByCondition(String keyword, Integer sidoCode, Integer gugunCode, List<Integer> contentTypeId, PagingAndSorting pagingAndSorting);
 	List<Attraction> selectAttractionsByDistance(int campingId, PagingAndSorting pagingAndSorting);
 	List<Attraction> selectAttractionsInSameGugun(int campingId, PagingAndSorting pagingAndSorting);
 }

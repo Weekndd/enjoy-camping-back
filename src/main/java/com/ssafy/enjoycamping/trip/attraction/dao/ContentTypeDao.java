@@ -12,4 +12,5 @@ import java.util.Optional;
 @Transactional(readOnly = true)
 public interface ContentTypeDao {
 	Optional<ContentType> selectByName(String name);
+	Optional<ContentType> selectById(int id);
 }

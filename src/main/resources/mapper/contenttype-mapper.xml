@@ -9,4 +9,9 @@
         SELECT * FROM contenttypes WHERE content_type_name = #{name}
     </select>
 
+    <!-- id으로 ContentType 조회 -->
+    <select id="selectById" parameterType="Integer" resultType="contentType">
+        SELECT * FROM contenttypes WHERE content_type_id = #{id}
+    </select>
+
 </mapper>

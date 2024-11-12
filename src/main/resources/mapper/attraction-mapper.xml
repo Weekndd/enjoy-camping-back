@@ -44,8 +44,11 @@
         <if test="gugunCode != null and gugunCode != ''">
             AND si_gun_gu_code = #{gugunCode}
         </if>
-        <if test="contentTypeId != null">
-            AND content_type_id = #{contentTypeId}
+        <if test="contentTypeId != null and !contentTypeId.isEmpty()">
+            AND content_type_id IN
+            <foreach item="typeId" collection="contentTypeId" open="(" separator="," close=")">
+                #{typeId}
+            </foreach>
         </if>
 
         <!-- 동적 정렬 처리 -->

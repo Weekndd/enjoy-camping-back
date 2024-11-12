@@ -39,7 +39,7 @@ public class AttractionController {
             @RequestParam(value = "keyword", required = false) String keyword,
             @RequestParam(value = "sido", required = false) String sidoCode,
             @RequestParam(value = "gugun", required = false) String gugunCode,
-            @RequestParam(value = "contentType", required = false) String contentType,
+            @RequestParam(value = "contentType", required = false) List<Integer> contentType,
             @RequestParam(defaultValue = "0") int pageNo,
             @RequestParam(defaultValue = "10") int pageCnt,
             @RequestParam(defaultValue = "title") String order,
