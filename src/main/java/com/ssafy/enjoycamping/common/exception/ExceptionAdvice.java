@@ -16,6 +16,7 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.client.HttpClientErrorException;
+import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 
 import static com.ssafy.enjoycamping.common.response.BaseResponseStatus.FAILED_TO_VALIDATION;
 
@@ -28,6 +29,14 @@ public class ExceptionAdvice {
     public BaseResponse<BaseResponseStatus> BadRequestExceptionHandle(BadRequestException exception) {
         log.warn("BadRequestExceptionHandle has occurred. %s %s %s".formatted(exception.getMessage(), exception.getCause(), exception.getStackTrace()[0]));
         return new BaseResponse<>(exception.getStatus());
+    }
+
+    @ExceptionHandler(MethodArgumentTypeMismatchException.class)
+    @ApiResponse(responseCode = "400", description = "잘못된 요청 파라미터 타입", content = @Content)
+    @ResponseStatus(value = HttpStatus.BAD_REQUEST)
+    public BaseResponse<BaseResponseStatus> handleTypeMismatchException(MethodArgumentTypeMismatchException ex) {
+        log.warn("MethodArgumentTypeMismatchException has occurred. Parameter: {}, Message: {}", ex.getName(), ex.getMessage());
+        return new BaseResponse<>(BaseResponseStatus.INVALID_PARAMETER);
     }
 
     @ExceptionHandler(UnauthorizedException.class)
