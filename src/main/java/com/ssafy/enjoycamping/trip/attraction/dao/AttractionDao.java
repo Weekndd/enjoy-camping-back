@@ -16,7 +16,7 @@ import java.util.Optional;
 public interface AttractionDao {
 	Optional<Attraction> selectById(int id);
 	List<Attraction> selectByCondition(String keyword, Integer sidoCode, Integer gugunCode, List<Integer> contentTypeId, PagingAndSorting pagingAndSorting);
-	int countByCondition(String keyword, Integer sidoCode, Integer gugunCode);
+	int countByCondition(String keyword, Integer sidoCode, Integer gugunCode, List<Integer> contentType);
 	List<AttractionDistanceDto> selectAttractionsInSameGugun(int campingId, PagingAndSorting pagingAndSorting);
 	int countInSameGugun(int attractionId);
 }

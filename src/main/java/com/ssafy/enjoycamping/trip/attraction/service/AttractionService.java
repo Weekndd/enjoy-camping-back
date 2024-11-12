@@ -9,7 +9,6 @@ import com.ssafy.enjoycamping.trip.attraction.dto.AttractionDistanceDto;
 import com.ssafy.enjoycamping.trip.attraction.dto.AttractionDto;
 import com.ssafy.enjoycamping.trip.attraction.entity.Attraction;
 import com.ssafy.enjoycamping.trip.camping.dao.CampingDao;
-import com.ssafy.enjoycamping.trip.camping.entity.Camping;
 import com.ssafy.enjoycamping.trip.contenttype.dao.ContentTypeDao;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -46,8 +45,8 @@ public class AttractionService {
 				.collect(Collectors.toList());
 	}
 
-	public int countByCondition(String keyword, Integer sidoCode, Integer gugunCode) {
-		return attractionDao.countByCondition(keyword, sidoCode, gugunCode);
+	public int countByCondition(String keyword, Integer sidoCode, Integer gugunCode, List<Integer> contentType) {
+		return attractionDao.countByCondition(keyword, sidoCode, gugunCode, contentType);
 	}
 
 	public List<AttractionDistanceDto> getNearByCampsite(int campingId, PagingAndSorting pagingAndSorting) throws BaseException {

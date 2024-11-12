@@ -40,8 +40,8 @@ public class CampingController {
             @RequestParam(value = "gugun", required = false) Integer gugunCode,
             @RequestParam(defaultValue = "1") int pageNo,
             @RequestParam(defaultValue = "9") int pageCnt,
-            @RequestParam(defaultValue = "name") String order,
-            @RequestParam(defaultValue = "asc") String sort){
+            @RequestParam(defaultValue = "name") PagingAndSorting.CampingOrder order,
+            @RequestParam(defaultValue = "asc") PagingAndSorting.Sort sort){
         PagingAndSorting pagingAndSorting = new PagingAndSorting(pageNo, pageCnt, order, sort);
         List<CampingDto> campings = campingService.searchCampings(keyword, sidoCode, gugunCode, pagingAndSorting);
         int totalCount = campingService.countByCondition(keyword, sidoCode, gugunCode);
@@ -56,8 +56,10 @@ public class CampingController {
     public BaseResponse<List<CampingDistanceDto>> getNearByCampsite(
             @PathVariable("index") int index,
             @RequestParam(defaultValue = "1") int pageNo,
-            @RequestParam(defaultValue = "9") int pageCnt){
-        PagingAndSorting pagingAndSorting = new PagingAndSorting(pageNo, pageCnt);
+            @RequestParam(defaultValue = "9") int pageCnt,
+            @RequestParam(defaultValue = "distance") PagingAndSorting.DistanceOrder order,
+            @RequestParam(defaultValue = "asc") PagingAndSorting.Sort sort){
+        PagingAndSorting pagingAndSorting = new PagingAndSorting(pageNo, pageCnt, order, sort);
         List<CampingDistanceDto> campings = campingService.getNearByAttraction(index, pagingAndSorting);
         int totalCount = campingService.countInSameGugun(index);
 

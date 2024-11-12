@@ -31,7 +31,7 @@ public class ExceptionAdvice {
         return new BaseResponse<>(exception.getStatus());
     }
 
-    @ExceptionHandler(MethodArgumentTypeMismatchException.class)
+    @ExceptionHandler({MethodArgumentTypeMismatchException.class, IllegalArgumentException.class})
     @ApiResponse(responseCode = "400", description = "잘못된 요청 파라미터 타입", content = @Content)
     @ResponseStatus(value = HttpStatus.BAD_REQUEST)
     public BaseResponse<BaseResponseStatus> handleTypeMismatchException(MethodArgumentTypeMismatchException ex) {
