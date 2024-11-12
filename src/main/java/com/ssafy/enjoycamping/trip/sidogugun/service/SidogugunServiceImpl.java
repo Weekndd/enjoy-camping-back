@@ -1,23 +1,36 @@
 package com.ssafy.enjoycamping.trip.sidogugun.service;
 
 import com.ssafy.enjoycamping.trip.sidogugun.dao.SidogugunDao;
+import com.ssafy.enjoycamping.trip.sidogugun.dto.GugunDto;
+import com.ssafy.enjoycamping.trip.sidogugun.dto.SidoDto;
 import com.ssafy.enjoycamping.trip.sidogugun.entity.Gugun;
-import com.ssafy.enjoycamping.trip.sidogugun.entity.Sido;
-import org.springframework.beans.factory.annotation.Autowired;
+
+import lombok.AllArgsConstructor;
+
+import org.springframework.stereotype.Service;
 
 import java.util.List;
 
+@Service
+@AllArgsConstructor
 public class SidogugunServiceImpl implements SidogugunService {
-	@Autowired
-    private SidogugunDao dao;
-
-    @Override
-    public List<Gugun> findBySidoCode(int sidoCode) {
-        return dao.findGugunsBySido(sidoCode);
-    }
+    private SidogugunDao sidoGugunDao;
 
 	@Override
-	public List<Sido> findAll() {
-		return dao.findAllSido();
+	public List<SidoDto> getSidos() {
+		List<SidoDto> sidos = sidoGugunDao.selectSidos()
+				.stream()
+				.map(SidoDto::fromEntity)
+				.toList();
+		return sidos;
 	}
+
+	@Override
+	public List<GugunDto> getGugunsBySidoCode(int sidoCode) {
+		List<Gugun> guguns = sidoGugunDao.selectGugunsBySidoId(sidoCode);
+		return guguns.stream()
+				.map(GugunDto::fromEntity)
+				.toList();
+	}
+	
 }

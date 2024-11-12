@@ -16,6 +16,7 @@ public interface ReviewDao {
 	void update(Review review);
 	void delete(int id);
 	List<Review> selectByCondition(String keyword, Integer sidoCode, Integer gugunCode, PagingAndSorting pagingAndSorting);
+	List<Review> selectByUserId(int userId);
 	
 }
 

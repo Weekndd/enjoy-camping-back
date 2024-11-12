@@ -1,5 +1,7 @@
 package com.ssafy.enjoycamping.review.entity;
 
+import java.time.LocalDateTime;
+
 import org.apache.ibatis.type.Alias;
 
 import lombok.AllArgsConstructor;
@@ -24,7 +26,7 @@ public class Review {
 	private int gugunCode;
 	private String title;
 	private String content;
-	private String createAt;
-	private String updatedAt;
+	private LocalDateTime createdAt;
+	private LocalDateTime updatedAt;
 }
 

@@ -48,6 +48,7 @@ public class ReviewServiceImpl implements ReviewService {
 //		User user = userDao.selectActiveById(id)
 //				.orElseThrow(() -> new UnauthorizedException(BaseResponseStatus.INVALID_USER_JWT));
 		
+		//TODO: 이미지 들어왔을 때 이미지 테이블에 인서트하기
 		Review newReview = request.toEntity();
 		reviewDao.insert(newReview);
 		return CreateReviewDto.ResponseCreateReviewDto.builder()
@@ -103,8 +104,8 @@ public class ReviewServiceImpl implements ReviewService {
 	}
 
 	@Override
-	public List<ReviewDto> searchReviews(String keyword, String sido, String gugun,
-			PagingAndSorting pagingAndSorting) throws BaseException{
+	public List<ReviewDto> getReviewsByCondition(String keyword, String sido, String gugun,
+			PagingAndSorting pagingAndSorting) throws BaseException {
 		Integer sidoCode = (sido != null && !sido.isEmpty()) ? Integer.parseInt(sido) : null;
         Integer gugunCode = (gugun != null && !gugun.isEmpty()) ? Integer.parseInt(gugun) : null;
         
@@ -114,6 +115,15 @@ public class ReviewServiceImpl implements ReviewService {
 				.map(ReviewDto::fromEntity)
 				.toList();
 	}
+	
+	@Override
+	public List<ReviewDto> getReviewsByUserId(int userId) {
+		List<Review> reviews = reviewDao.selectByUserId(userId);
+		return reviews.stream()
+				.map(ReviewDto::fromEntity)
+				.toList();
+	}
+	
 	
 
 

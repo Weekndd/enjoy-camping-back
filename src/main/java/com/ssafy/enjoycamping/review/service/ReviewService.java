@@ -14,5 +14,6 @@ public interface ReviewService {
 	ReviewDto updateReview(UpdateReviewDto.RequestUpdateReviewDto request, int id);
 	List<ReviewDto> getReviews();
 	List<ReviewDto> getReviewsByCampingId(int campingId);
-	List<ReviewDto> searchReviews(String keyword, String sidoCode, String gugunCode, PagingAndSorting pagingAndSorting);
+	List<ReviewDto> getReviewsByCondition(String keyword, String sidoCode, String gugunCode, PagingAndSorting pagingAndSorting);
+	List<ReviewDto> getReviewsByUserId(int userId);
 }
