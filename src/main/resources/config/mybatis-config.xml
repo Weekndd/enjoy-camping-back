@@ -8,12 +8,16 @@
         <package name="com.ssafy.enjoycamping.review.entity"/>
         <package name="com.ssafy.enjoycamping.trip.attraction.entity"/>
         <package name="com.ssafy.enjoycamping.trip.camping.entity"/>
+        <package name="com.ssafy.enjoycamping.trip.sidogugun.entity"/>
+        <package name="com.ssafy.enjoycamping.trip.contenttype.entity"/>
         <!-- 필요한 패키지를 계속 추가 -->
     </typeAliases>
 	<mappers>
 		<mapper resource="mapper/user-mapper.xml"/>
         <mapper resource="mapper/attraction-mapper.xml"/>
         <mapper resource="mapper/contenttype-mapper.xml"/>
+        <mapper resource="mapper/review-mapper.xml"/>
         <mapper resource="mapper/camping-mapper.xml"/>
+        <mapper resource="mapper/sidoGugun-mapper.xml"/>
 	</mappers>
 </configuration>

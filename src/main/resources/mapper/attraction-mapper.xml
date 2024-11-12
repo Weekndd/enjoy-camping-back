@@ -24,13 +24,34 @@
         <result property="overview" column="overview"/>
     </resultMap>
 
+    <!-- resultMap 설정 -->
+    <resultMap id="AttractionWithDistanceResultMap" type="com.ssafy.enjoycamping.trip.attraction.dto.AttractionDistanceDto">
+        <id property="no" column="no"/>
+        <result property="contentId" column="content_id"/>
+        <result property="title" column="title"/>
+        <result property="contentTypeId" column="content_type_id"/>
+        <result property="sidoCode" column="area_code"/>
+        <result property="gugunCode" column="si_gun_gu_code"/>
+        <result property="firstImage1" column="first_image1"/>
+        <result property="firstImage2" column="first_image2"/>
+        <result property="mapLevel" column="map_level"/>
+        <result property="latitude" column="latitude"/>
+        <result property="longitude" column="longitude"/>
+        <result property="tel" column="tel"/>
+        <result property="addr1" column="addr1"/>
+        <result property="addr2" column="addr2"/>
+        <result property="homepage" column="homepage"/>
+        <result property="overview" column="overview"/>
+        <result property="distance" column="distance"/>
+    </resultMap>
+
     <!-- ID로 명소 조회 -->
     <select id="selectById" parameterType="Integer" resultMap="AttractionResultMap">
         SELECT * FROM attractions WHERE no = #{id}
     </select>
 
     <!-- 동적 SQL을 사용하여 조건에 따른 명소 검색 -->
-    <select id="searchAttractions" resultMap="AttractionResultMap">
+    <select id="selectByCondition" resultMap="AttractionResultMap">
         SELECT * FROM attractions
         WHERE 1=1
         <if test="keyword != null and keyword != ''">
@@ -44,8 +65,11 @@
         <if test="gugunCode != null and gugunCode != ''">
             AND si_gun_gu_code = #{gugunCode}
         </if>
-        <if test="contentTypeId != null">
-            AND content_type_id = #{contentTypeId}
+        <if test="contentTypeId != null and !contentTypeId.isEmpty()">
+            AND content_type_id IN
+            <foreach item="typeId" collection="contentTypeId" open="(" separator="," close=")">
+                #{typeId}
+            </foreach>
         </if>
 
         <!-- 동적 정렬 처리 -->
@@ -64,27 +88,41 @@
         </if>
     </select>
 
-    <!-- 거리 기준으로 가까운 관광지 조회 -->
-    <select id="selectAttractionsByDistance" resultMap="AttractionResultMap">
-        SELECT a.*,
-            (6371 * ACOS(COS(RADIANS(c.latitude))
-            * COS(RADIANS(a.latitude))
-            * COS(RADIANS(a.longitude) - RADIANS(c.longitude))
-            + SIN(RADIANS(c.latitude))
-            * SIN(RADIANS(a.latitude)))) AS distance
-        FROM attractions a
-        JOIN camping c ON c.id = #{campingId}
-        ORDER BY distance ASC
-
-        <!-- 페이징 처리 -->
-        <if test="pagingAndSorting.pageCnt > 0">
-            LIMIT #{pagingAndSorting.pageCnt} OFFSET #{pagingAndSorting.offset}
+    <!-- 동적 조건에 따른 관광지 개수 조회 -->
+    <select id="countByCondition" resultType="int">
+        SELECT COUNT(*)
+        FROM attractions
+        WHERE 1=1
+        <if test="keyword != null and keyword != ''">
+            AND (title LIKE CONCAT('%', #{keyword}, '%')
+            OR ADDR1 LIKE CONCAT('%', #{keyword}, '%')
+            OR ADDR2 LIKE CONCAT('%', #{keyword}, '%'))
+        </if>
+        <if test="sidoCode != null and sidoCode != ''">
+            AND area_code = #{sidoCode}
+        </if>
+        <if test="gugunCode != null and gugunCode != ''">
+            AND si_gun_gu_code = #{gugunCode}
+        </if>
+        <if test="contentType != null and !contentType.isEmpty()">
+            AND content_type_id IN
+            <foreach item="contentTypeId" collection="contentType" open="(" separator="," close=")">
+                #{contentTypeId}
+            </foreach>
         </if>
     </select>
 
-    <!-- 같은 구군에 위치한 관광지 조회 -->
-    <select id="selectAttractionsInSameGugun" resultMap="AttractionResultMap">
-        SELECT a.*
+    <!-- 같은 구군에 위치한 캠핑장과의 거리 순으로 조회 -->
+    <select id="selectAttractionsInSameGugun" resultMap="AttractionWithDistanceResultMap">
+        SELECT
+            a.no, a.content_id, a.title, a.content_type_id, a.area_code, a.si_gun_gu_code,
+            a.first_image1, a.first_image2, a.map_level, a.latitude, a.longitude,
+            a.tel, a.addr1, a.addr2, a.homepage, a.overview,
+            CAST((6371 * ACOS(COS(RADIANS(c.latitude))
+            * COS(RADIANS(a.latitude))
+            * COS(RADIANS(a.longitude) - RADIANS(c.longitude))
+            + SIN(RADIANS(c.latitude))
+            * SIN(RADIANS(a.latitude)))) AS DOUBLE) AS distance
         FROM attractions a
         JOIN camping c ON c.id = #{campingId}
         WHERE a.area_code = c.sido_code
@@ -95,11 +133,23 @@
             <when test="pagingAndSorting.order != null and pagingAndSorting.sort != null">
                 ORDER BY ${pagingAndSorting.order} ${pagingAndSorting.sort}
             </when>
+            <otherwise>
+                ORDER BY distance ASC  <!-- 기본 정렬 조건 설정 -->
+            </otherwise>
         </choose>
 
         <!-- 페이징 처리 -->
         <if test="pagingAndSorting.pageCnt > 0">
             LIMIT #{pagingAndSorting.pageCnt} OFFSET #{pagingAndSorting.offset}
         </if>
+    </select>
+
+    <!-- 같은 구군에 위치한 명소의 개수 조회 -->
+    <select id="countInSameGugun" resultType="int">
+        SELECT COUNT(*)
+        FROM attractions a
+        JOIN camping c ON c.id = #{campingId}
+        WHERE a.area_code = c.sido_code
+        AND a.si_gun_gu_code = c.gugun_code
     </select>
 </mapper>

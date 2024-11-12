@@ -1,4 +1,4 @@
-package com.ssafy.enjoycamping.trip.attraction.entity;
+package com.ssafy.enjoycamping.trip.contenttype.entity;
 
 import lombok.Builder;
 import lombok.Getter;
@@ -10,7 +10,7 @@ import org.apache.ibatis.type.Alias;
 @Setter
 @Builder
 @ToString
-@Alias("contentType")
+@Alias("contenttype")
 public class ContentType {
     private int contentTypeId;
     private String contentTypeName;

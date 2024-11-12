@@ -1,0 +1,101 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+        
+<mapper namespace="com.ssafy.enjoycamping.review.dao.ReviewDao">
+
+	<resultMap id="ReviewResultMap" type="review">
+        <id property="id" column="id"/>
+        <result property="campingId" column="camping_id"/>
+        <result property="writerId" column="writer_id"/>
+        <result property="sidoCode" column="sido_code"/>
+        <result property="gugunCode" column="gugun_code"/>
+        <result property="title" column="title"/>
+        <result property="createdAt" column="created_at"/>
+        <result property="updatedAt" column="updated_at"/>
+    </resultMap>
+    
+    <insert id="insert" parameterType="review" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO review 
+        	(camping_id, 
+        	writer_id, 
+        	sido_code, 
+        	gugun_code, 
+        	title, 
+        	content)
+        VALUES
+        	(#{campingId}, 
+        	#{writerId}, 
+        	#{sidoCode}, 
+        	#{gugunCode}, 
+        	#{title}, 
+        	#{content})
+    </insert>
+
+	<select id="selectById" parameterType="int" resultMap="ReviewResultMap">
+		SELECT * 
+		FROM review 
+		WHERE id=#{id}
+	</select>
+	
+	<delete id="delete" parameterType="int">
+		DELETE 
+		FROM review 
+		WHERE id=#{id}
+	</delete>
+
+	<update id="update" parameterType="review">
+		UPDATE review
+		SET title = #{title},
+        	content = #{content}
+		WHERE id = #{id}
+	</update>
+	
+	<select id="selectAll" resultMap="ReviewResultMap">
+		SELECT *
+		FROM review
+	</select>
+	
+	<select id="selectByCampingId" parameterType="int" resultMap="ReviewResultMap">
+		SELECT *
+		FROM review
+		WHERE camping_id = #{campingId}
+	</select>
+	
+	<select id="selectByCondition" resultMap="ReviewResultMap">
+	    SELECT *
+	    FROM review
+	    WHERE 1=1
+		    <if test="keyword != null and keyword != ''">
+	            AND (title LIKE CONCAT('%', #{keyword}, '%')
+	                OR content LIKE CONCAT('%', #{keyword}, '%'))
+	        </if>
+	        <if test="sidoCode != null and sidoCode != ''">
+            	AND sido_code = #{sidoCode}
+        	</if>
+        	<if test="gugunCode != null and gugunCode != ''">
+            	AND gugun_code = #{gugunCode}
+        	</if>
+        	<!-- 동적 정렬 처리 -->
+	        <choose>
+	            <when test="pagingAndSorting.order != null and pagingAndSorting.sort != null">
+	                ORDER BY ${pagingAndSorting.order} ${pagingAndSorting.sort}
+	            </when>
+	            <otherwise>
+	                ORDER BY name ASC  <!-- 기본 정렬 조건 설정 -->
+	            </otherwise>
+	        </choose>
+	
+	        <!-- 페이징 처리 -->
+	        <if test="pagingAndSorting.pageCnt > 0">
+	            LIMIT #{pagingAndSorting.pageCnt} OFFSET #{pagingAndSorting.offset}
+	        </if>
+	</select>
+	
+	<select id="selectByUserId" parameterType="int" resultMap="ReviewResultMap">
+		SELECT *
+		FROM review
+		WHERE writer_id = #{userId}
+	</select>
+</mapper>

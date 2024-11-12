@@ -6,6 +6,7 @@ import com.ssafy.enjoycamping.common.util.PagingAndSorting;
 import com.ssafy.enjoycamping.trip.attraction.dao.AttractionDao;
 import com.ssafy.enjoycamping.trip.attraction.entity.Attraction;
 import com.ssafy.enjoycamping.trip.camping.dao.CampingDao;
+import com.ssafy.enjoycamping.trip.camping.dto.CampingDistanceDto;
 import com.ssafy.enjoycamping.trip.camping.dto.CampingDto;
 import com.ssafy.enjoycamping.trip.camping.entity.Camping;
 import lombok.RequiredArgsConstructor;
@@ -28,31 +29,29 @@ public class CampingServiceImpl implements CampingService{
     }
 
     @Override
-    public List<CampingDto> searchCampings(String keyword, String sidoCode, String gugunCode, PagingAndSorting pagingAndSorting) {
-        Integer sidoCodeInt = (sidoCode != null && !sidoCode.isEmpty()) ? Integer.parseInt(sidoCode) : null;
-        Integer gugunCodeInt = (gugunCode != null && !gugunCode.isEmpty()) ? Integer.parseInt(gugunCode) : null;
-
-        List<Camping> campings = campingDao.searchCampings(keyword, sidoCodeInt, gugunCodeInt, pagingAndSorting);
+    public List<CampingDto> searchCampings(String keyword, Integer sidoCode, Integer gugunCode, PagingAndSorting pagingAndSorting) {
+        List<Camping> campings = campingDao.selectByCondition(keyword, sidoCode, gugunCode, pagingAndSorting);
         return campings.stream()
                 .map(CampingDto::fromEntity)
                 .collect(Collectors.toList());
     }
 
     @Override
-    public List<CampingDto> getNearByAttraction(int attractionId, PagingAndSorting pagingAndSorting) {
-        Attraction attraction = attractionDao.selectById(attractionId)
+    public int countByCondition(String keyword, Integer sidoCode, Integer gugunCode) {
+        return campingDao.countByCondition(keyword, sidoCode, gugunCode);
+    }
+
+    @Override
+    public List<CampingDistanceDto> getNearByAttraction(int attractionId, PagingAndSorting pagingAndSorting) {
+        attractionDao.selectById(attractionId)
                 .orElseThrow(() -> new BadRequestException(BaseResponseStatus.NOT_EXIST_ATTRACTION));
 
-        if ("distance".equals(pagingAndSorting.getOrder())) {
-            // 거리 기반으로 가까운 캠핑장 조회
-            return campingDao.selectCampingsByDistance(attractionId, pagingAndSorting).stream()
-                    .map(CampingDto::fromEntity)
-                    .collect(Collectors.toList());
-        } else {
-            // 같은 구군에 위치하는 캠핑장 조회
-            return campingDao.selectCampingsInSameGugun(attractionId, pagingAndSorting).stream()
-                    .map(CampingDto::fromEntity)
-                    .collect(Collectors.toList());
-        }
+        // 같은 구군에 위치하는 캠핑장 조회
+        return campingDao.selectCampingsInSameGugun(attractionId, pagingAndSorting);
+    }
+
+    @Override
+    public int countInSameGugun(int attractionId) {
+        return campingDao.countInSameGugun(attractionId);
     }
 }
