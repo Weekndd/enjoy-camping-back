@@ -1,11 +1,9 @@
 package com.ssafy.enjoycamping.trip.attraction.controller;
 
 import com.ssafy.enjoycamping.common.response.BaseResponse;
-import com.ssafy.enjoycamping.common.response.BaseResponseStatus;
 import com.ssafy.enjoycamping.common.util.PagingAndSorting;
 import com.ssafy.enjoycamping.trip.attraction.dto.AttractionDto;
 import com.ssafy.enjoycamping.trip.attraction.service.AttractionService;
-import com.ssafy.enjoycamping.user.dto.*;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -39,7 +37,7 @@ public class AttractionController {
             @RequestParam(value = "keyword", required = false) String keyword,
             @RequestParam(value = "sido", required = false) String sidoCode,
             @RequestParam(value = "gugun", required = false) String gugunCode,
-            @RequestParam(value = "contentType", required = false) String contentType,
+            @RequestParam(value = "contentType", required = false) List<Integer> contentType,
             @RequestParam(defaultValue = "0") int pageNo,
             @RequestParam(defaultValue = "10") int pageCnt,
             @RequestParam(defaultValue = "title") String order,

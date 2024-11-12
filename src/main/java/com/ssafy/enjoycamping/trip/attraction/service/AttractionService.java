@@ -5,12 +5,11 @@ import com.ssafy.enjoycamping.common.exception.BaseException;
 import com.ssafy.enjoycamping.common.response.BaseResponseStatus;
 import com.ssafy.enjoycamping.common.util.PagingAndSorting;
 import com.ssafy.enjoycamping.trip.attraction.dao.AttractionDao;
-import com.ssafy.enjoycamping.trip.attraction.dao.ContentTypeDao;
 import com.ssafy.enjoycamping.trip.attraction.dto.AttractionDto;
 import com.ssafy.enjoycamping.trip.attraction.entity.Attraction;
-import com.ssafy.enjoycamping.trip.attraction.entity.ContentType;
 import com.ssafy.enjoycamping.trip.camping.dao.CampingDao;
 import com.ssafy.enjoycamping.trip.camping.entity.Camping;
+import com.ssafy.enjoycamping.trip.contenttype.dao.ContentTypeDao;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -31,18 +30,19 @@ public class AttractionService {
 		return AttractionDto.fromEntity(attraction);
 	}
 
-	public List<AttractionDto> searchAttractions(String keyword, String sidoCode, String gugunCode, String contentType, PagingAndSorting pagingAndSorting) throws BaseException {
+	public List<AttractionDto> searchAttractions(String keyword, String sidoCode, String gugunCode, List<Integer> contentType, PagingAndSorting pagingAndSorting) throws BaseException {
 		Integer sidoCodeInt = (sidoCode != null && !sidoCode.isEmpty()) ? Integer.parseInt(sidoCode) : null;
 		Integer gugunCodeInt = (gugunCode != null && !gugunCode.isEmpty()) ? Integer.parseInt(gugunCode) : null;
 
-		Integer contentTypeId = null;
+		// 들어온 Content Type 확인
 		if (contentType != null && !contentType.isEmpty()) {
-			ContentType type = contentTypeDao.selectByName(contentType)
-					.orElseThrow(() -> new BadRequestException(BaseResponseStatus.NOT_EXIST_CONTENTTYPE));
-			contentTypeId = type.getContentTypeId();
+			contentType.forEach(c -> {
+				contentTypeDao.selectById(c)
+						.orElseThrow(() -> new BadRequestException(BaseResponseStatus.NOT_EXIST_CONTENTTYPE));
+			});
 		}
 
-		List<Attraction> attractions = attractionDao.selectByCondition(keyword, sidoCodeInt, gugunCodeInt, contentTypeId, pagingAndSorting);
+		List<Attraction> attractions = attractionDao.selectByCondition(keyword, sidoCodeInt, gugunCodeInt, contentType, pagingAndSorting);
 		return attractions.stream()
 				.map(AttractionDto::fromEntity)
 				.collect(Collectors.toList());
