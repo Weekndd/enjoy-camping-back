@@ -74,7 +74,7 @@ public class JwtProvider {
                 .signWith(SECRET_KEY, Jwts.SIG.HS512)
                 .compact();
 
-    	
+    	redisTemplate.opsForValue().set(String.valueOf(jwtPayload.getId()), refreshToken);
         return refreshToken;
     }
 

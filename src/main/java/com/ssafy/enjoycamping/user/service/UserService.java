@@ -12,6 +12,8 @@ import com.ssafy.enjoycamping.common.response.BaseResponseStatus;
 import com.ssafy.enjoycamping.trip.attraction.dto.AttractionDto;
 import com.ssafy.enjoycamping.user.dto.*;
 import com.ssafy.enjoycamping.user.util.*;
+
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 
 import com.ssafy.enjoycamping.user.dao.UserDao;
@@ -24,7 +26,8 @@ import lombok.RequiredArgsConstructor;
 public class UserService {
 	
 	private final UserDao userDao;
-
+	private final RedisTemplate redisTemplate;
+	
 	public JoinDto.ResponseJoinDto join(JoinDto.RequestJoinDto request) throws BaseException {
 		// 이메일 중복 확인
 		userDao.selectByEmail(EncryptionService.encrypt(request.getEmail()))
@@ -73,8 +76,9 @@ public class UserService {
 				.id(user.getId())
 				.issuedAt(new Date())
 				.build());
+		
 		// TODO: Refresh Token DB에 저장
-
+		
 		return LoginDto.ResponseLoginDto.builder()
 				.accessToken(accessToken)
 				.refreshToken(refreshToken)
