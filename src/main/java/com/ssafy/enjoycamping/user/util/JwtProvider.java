@@ -10,7 +10,10 @@ import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
 import jakarta.annotation.PostConstruct;
 import jakarta.servlet.http.HttpServletRequest;
+
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Component;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
@@ -20,7 +23,14 @@ import java.util.Date;
 
 @Component
 public class JwtProvider {
-    @Value("${spring.application.name}")
+	@Autowired
+	private static RedisTemplate<String, String> redisTemplate;
+	
+//    public JwtProvider(RedisTemplate<String, String> redisTemplate) {
+//		this.redisTemplate = redisTemplate;
+//	}
+
+	@Value("${spring.application.name}")
     private String issuerConfig;
 
     @Value("${security.jwt.access-token.expiration}")
@@ -56,13 +66,16 @@ public class JwtProvider {
     }
 
     public static String createRefreshToken(JwtPayload jwtPayload) {
-        return Jwts.builder()
+    	String refreshToken = Jwts.builder()
                 .claim("id", jwtPayload.getId())
                 .issuer(ISSUER)
                 .issuedAt(jwtPayload.getIssuedAt())
                 .expiration(new Date(jwtPayload.getIssuedAt().getTime() + REFRESH_TOKEN_EXPIRATION))
                 .signWith(SECRET_KEY, Jwts.SIG.HS512)
                 .compact();
+
+    	
+        return refreshToken;
     }
 
     public static int getUserId() throws BaseException {
