@@ -1,11 +1,12 @@
 package com.ssafy.enjoycamping.user.util;
 
-import lombok.AllArgsConstructor;
+import java.util.Date;
+
+import com.ssafy.enjoycamping.common.model.TokenType;
+
 import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
-
-import java.util.Date;
 
 @Getter
 @Setter
@@ -13,4 +14,5 @@ import java.util.Date;
 public class JwtPayload {
     private int id;
     private Date issuedAt;
+    private TokenType tokenType;
 }
