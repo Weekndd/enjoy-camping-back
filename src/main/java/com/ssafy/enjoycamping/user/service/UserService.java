@@ -124,29 +124,23 @@ public class UserService {
 	}
 
 	public FindPwdDto.ResponseFindPwdDto findPassword(FindPwdDto.RequestFindPwdDto request) throws BaseException {
-		int id = JwtProvider.getAuthenticatedUserId(TokenType.ACCESS);
-
-		// JWT로 User 불러오기
-		User user = userDao.selectActiveById(id)
-				.orElseThrow(() -> new UnauthorizedException(BaseResponseStatus.INVALID_USER_JWT));
-
+		//email만 확인해서 뭔가 부실한거 같기도,,,
+		
 		// DB에서 암호화된 이메일로 유저 정보 조회
 		User emailUser = userDao.selectActiveByEmail(EncryptionService.encrypt(request.getEmail()))
 				.orElseThrow(() -> new BadRequestException(BaseResponseStatus.NOT_EXIST_EMAIL));
 
-		// JWT 유저 권한 확인
-		if(user.getId() != emailUser.getId()) throw new UnauthorizedException(BaseResponseStatus.INVALID_USER_JWT);
 		// 이름 확인
-		if(!user.getName().equals(emailUser.getName())) throw new BadRequestException(BaseResponseStatus.INPUT_PARSE_ERROR);
+		if(!request.getName().equals(emailUser.getName())) throw new BadRequestException(BaseResponseStatus.INPUT_PARSE_ERROR);
 
 		// 새로운 랜덤 비밀번호 생성
 	    String randomPassword = RandomPasswordBuilder.getRandomPassword(10);
 
 		// 비밀번호 단방향 해시 암호화
 		String hashedPassword = PasswordEncoder.encode(randomPassword);
-		user.setPassword(hashedPassword);
+		emailUser.setPassword(hashedPassword);
 
-		userDao.update(user);
+		userDao.update(emailUser);
 		return FindPwdDto.ResponseFindPwdDto.builder()
 				.password(randomPassword)
 				.build();

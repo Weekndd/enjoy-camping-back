@@ -64,7 +64,7 @@ public class JwtProvider {
     public static String createAccessToken(JwtPayload jwtPayload){
         return Jwts.builder()
                 .claim("id", jwtPayload.getId())
-                .claim("token_type", jwtPayload.getTokenType())
+                .claim("tokenType", jwtPayload.getTokenType())
                 .issuer(ISSUER)
                 .issuedAt(jwtPayload.getIssuedAt())
                 .expiration(new Date(jwtPayload.getIssuedAt().getTime() + ACCESS_TOKEN_EXPIRATION))
@@ -75,7 +75,7 @@ public class JwtProvider {
     public static String createRefreshToken(JwtPayload jwtPayload) {
     	String refreshToken = Jwts.builder()
                 .claim("id", jwtPayload.getId())
-                .claim("token_type", jwtPayload.getTokenType())
+                .claim("tokenType", jwtPayload.getTokenType())
                 .issuer(ISSUER)
                 .issuedAt(jwtPayload.getIssuedAt())
                 .expiration(new Date(jwtPayload.getIssuedAt().getTime() + REFRESH_TOKEN_EXPIRATION))
@@ -92,12 +92,14 @@ public class JwtProvider {
     }
     
     public static int getAuthenticatedUserId(TokenType tokenType) throws BaseException {
-    	String token = getToken();
-    	JwtPayload payload = verifyToken(token);
+    	String token = getToken(); //헤더에서 토큰 가져옴
+    	JwtPayload payload = verifyToken(token); 
     	Integer userId = payload.getId();
-    	TokenType t = payload.getTokenType();
+    	TokenType nowTokenType = payload.getTokenType();
     	
-    	if(t != tokenType) // error
+    	if(nowTokenType != tokenType) { //현재 토큰 타입이 필요로 하는 토큰 타입과 맞지 않다면 에러
+    		throw new UnauthorizedException(BaseResponseStatus.INVALID_JWT);
+    	}
     	
     	if(tokenType == TokenType.REFRESH) verifyRefreshToken(token, userId);
     	return userId;
@@ -116,8 +118,11 @@ public class JwtProvider {
             Jws<Claims> claimsJws = Jwts.parser()
                     .verifyWith(SECRET_KEY).build()
                     .parseSignedClaims(token);
-
-            return new JwtPayload(claimsJws.getPayload().get("id", Integer.class), claimsJws.getPayload().getIssuedAt(),TokenType.);
+            String tokenType = claimsJws.getPayload().get("tokenType",String.class);
+            return new JwtPayload(
+            		claimsJws.getPayload().get("id", Integer.class),
+            		claimsJws.getPayload().getIssuedAt(),
+            		TokenType.valueOf(tokenType));
         } catch (Exception e) {
             throw new UnauthorizedException(BaseResponseStatus.INVALID_JWT);
         }
