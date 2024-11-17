@@ -4,6 +4,7 @@ import java.util.List;
 
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -11,6 +12,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.multipart.MultipartFile;
 
 import com.ssafy.enjoycamping.common.response.BaseResponse;
 import com.ssafy.enjoycamping.common.response.BaseResponseStatus;
@@ -35,9 +37,17 @@ public class ReviewController {
 	}
 
 	@PostMapping
-	public BaseResponse<CreateReviewDto.ResponseCreateReviewDto> createReview(@RequestBody CreateReviewDto.RequestCreateReviewDto request) {
+	public BaseResponse<CreateReviewDto.ResponseCreateReviewDto> createReview(
+			@ModelAttribute CreateReviewDto.RequestCreateReviewDto request) {
+		log.info("========================이미지 리스트 크기 : "+request.getImages().size());
 		CreateReviewDto.ResponseCreateReviewDto response = reviewService.createReview(request);
 		return new BaseResponse<>(response);
+	}
+	
+	@PostMapping
+	public BaseResponse<String> uploadImage(@RequestParam("image")MultipartFile image) {
+		String str = "";
+		return new BaseResponse<>("");
 	}
 	
 	@GetMapping("/{id}")

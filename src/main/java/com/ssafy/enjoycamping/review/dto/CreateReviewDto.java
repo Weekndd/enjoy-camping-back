@@ -1,11 +1,13 @@
 package com.ssafy.enjoycamping.review.dto;
 
+import java.util.List;
+
+import org.springframework.web.multipart.MultipartFile;
+
 import com.ssafy.enjoycamping.review.entity.Review;
 
-import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
-import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.ToString;
 
@@ -22,6 +24,7 @@ public class CreateReviewDto {
 		private int gugunCode;
 		private String title;
 		private String content;
+		private List<MultipartFile> images;
 		
 		public Review toEntity() {
 			return Review.builder()
