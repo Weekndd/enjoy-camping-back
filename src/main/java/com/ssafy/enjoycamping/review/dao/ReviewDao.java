@@ -6,6 +6,7 @@ import java.util.Optional;
 import org.apache.ibatis.annotations.Mapper;
 import com.ssafy.enjoycamping.common.util.PagingAndSorting;
 import com.ssafy.enjoycamping.review.entity.Review;
+import com.ssafy.enjoycamping.review.entity.ReviewImage;
 
 @Mapper
 public interface ReviewDao {
@@ -13,6 +14,9 @@ public interface ReviewDao {
 	List<Review> selectAll();
 	List<Review> selectByCampingId(int campingId);
 	int insert(Review review);
+	int insertImage(ReviewImage image);
+	int updateImageReviewId(ReviewImage image);
+	
 	void update(Review review);
 	void delete(int id);
 	List<Review> selectByCondition(String keyword, Integer sidoCode, Integer gugunCode, PagingAndSorting pagingAndSorting);

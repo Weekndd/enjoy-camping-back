@@ -1,45 +1,45 @@
 package com.ssafy.enjoycamping.review.service;
 
 
+import java.io.IOException;
 import java.util.List;
+import java.util.UUID;
 
-import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.context.annotation.Primary;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
-import com.ssafy.enjoycamping.common.exception.BadRequestException;
+import com.amazonaws.services.s3.AmazonS3;
+import com.amazonaws.services.s3.model.ObjectMetadata;
 import com.ssafy.enjoycamping.common.exception.BaseException;
 import com.ssafy.enjoycamping.common.exception.NotFoundException;
-import com.ssafy.enjoycamping.common.exception.UnauthorizedException;
 import com.ssafy.enjoycamping.common.response.BaseResponseStatus;
 import com.ssafy.enjoycamping.common.util.PagingAndSorting;
 import com.ssafy.enjoycamping.review.dao.ReviewDao;
 import com.ssafy.enjoycamping.review.dto.CreateReviewDto;
-import com.ssafy.enjoycamping.review.dto.CreateReviewDto.ResponseCreateReviewDto;
 import com.ssafy.enjoycamping.review.dto.ReviewDto;
 import com.ssafy.enjoycamping.review.dto.UpdateReviewDto;
 import com.ssafy.enjoycamping.review.entity.Review;
+import com.ssafy.enjoycamping.review.entity.ReviewImage;
 import com.ssafy.enjoycamping.trip.camping.dao.CampingDao;
 import com.ssafy.enjoycamping.trip.camping.entity.Camping;
 import com.ssafy.enjoycamping.user.dao.UserDao;
-import com.ssafy.enjoycamping.user.entity.User;
-import com.ssafy.enjoycamping.user.util.JwtProvider;
 
+import lombok.AllArgsConstructor;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 @Service
+@RequiredArgsConstructor
 public class ReviewServiceImpl implements ReviewService {
-	private ReviewDao reviewDao;
-	private UserDao userDao;
-	private CampingDao campingDao;
+	private final ReviewDao reviewDao;
+	private final UserDao userDao;
+	private final CampingDao campingDao;
+	private final AmazonS3 amazonS3;
 	
-	public ReviewServiceImpl(ReviewDao reviewDao, UserDao userDao, CampingDao campingDao) {
-		this.reviewDao = reviewDao;
-		this.userDao = userDao;
-		this.campingDao = campingDao;
-	}
+	@Value("${aws.s3.bucket}")
+	private String bucket;
 
 	@Override
 	public CreateReviewDto.ResponseCreateReviewDto createReview(CreateReviewDto.RequestCreateReviewDto request) {
@@ -48,14 +48,41 @@ public class ReviewServiceImpl implements ReviewService {
 //		User user = userDao.selectActiveById(id)
 //				.orElseThrow(() -> new UnauthorizedException(BaseResponseStatus.INVALID_USER_JWT));
 		
-		//TODO: 이미지 들어왔을 때 이미지 테이블에 인서트하기
 		Review newReview = request.toEntity();
 		reviewDao.insert(newReview);
+		
+		//미리 저장된 맵핑테이블의 이미지에 ReviewId부여
+		List<String> imageUrls = request.getImageUrls();
+		for(int i=0; i<imageUrls.size(); i++) {
+			ReviewImage reviewImage = ReviewImage.builder()
+					.reviewId(newReview.getId())
+					.imageUrl(imageUrls.get(i))
+					.build();
+			reviewDao.updateImageReviewId(reviewImage);
+		}
 		return CreateReviewDto.ResponseCreateReviewDto.builder()
 				.id(newReview.getId())
 				.build();
 	}
 	
+	@Override
+	public String createImageUrl(MultipartFile image) throws IOException{
+		String s3FileName = UUID.randomUUID().toString() + "_" + image.getOriginalFilename();
+		
+		ObjectMetadata metadata = new ObjectMetadata();
+		metadata.setContentType(image.getContentType()); //업로드된 파일의 MIME 타입을 설정
+		metadata.setContentLength(image.getSize()); //S3는 파일 업로드 전에 크기를 알야하기 떄문에 설정해야함
+		amazonS3.putObject(bucket, s3FileName, image.getInputStream(), metadata);
+		String imageUrl = amazonS3.getUrl(bucket, s3FileName).toString();
+		
+		//이미지 맵핑 테이블에 추가
+		reviewDao.insertImage(ReviewImage.builder()
+				.imageUrl(imageUrl)
+				.build());
+		
+		return imageUrl;
+	}
+
 	@Override
 	public ReviewDto getReview(int id) throws BaseException {
 		Review review = reviewDao.selectById(id)

@@ -32,6 +32,19 @@
         	#{title}, 
         	#{content})
     </insert>
+    
+    <insert id="insertImage" parameterType="reviewImage" useGeneratedKeys="true" keyProperty="id">
+    	INSERT INTO review_image
+    		(image_url)
+    	VALUES
+    		(#{imageUrl})
+    </insert>
+    
+    <update id="updateImageReviewId">
+    	UPDATE review_image
+    	SET review_id = #{reviewId}
+    	WHERE image_url = #{imageUrl}
+    </update>
 
 	<select id="selectById" parameterType="int" resultMap="ReviewResultMap">
 		SELECT * 

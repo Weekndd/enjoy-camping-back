@@ -24,7 +24,7 @@ public class CreateReviewDto {
 		private int gugunCode;
 		private String title;
 		private String content;
-		private List<MultipartFile> images;
+		private List<String> imageUrls;
 		
 		public Review toEntity() {
 			return Review.builder()

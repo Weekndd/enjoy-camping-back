@@ -1,5 +1,6 @@
 package com.ssafy.enjoycamping.review.controller;
 
+import java.io.IOException;
 import java.util.List;
 
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -15,7 +16,6 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
 import com.ssafy.enjoycamping.common.response.BaseResponse;
-import com.ssafy.enjoycamping.common.response.BaseResponseStatus;
 import com.ssafy.enjoycamping.common.util.PagingAndSorting;
 import com.ssafy.enjoycamping.review.dto.CreateReviewDto;
 import com.ssafy.enjoycamping.review.dto.ReviewDto;
@@ -23,31 +23,28 @@ import com.ssafy.enjoycamping.review.dto.UpdateReviewDto;
 import com.ssafy.enjoycamping.review.service.ReviewService;
 
 import io.swagger.v3.oas.annotations.tags.Tag;
+import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 @RestController
 @RequestMapping("/reviews")
 @Tag(name = "5. REVIEW")
+@AllArgsConstructor
 public class ReviewController {
 	private ReviewService reviewService;
 
-	public ReviewController(ReviewService reviewService) {
-		this.reviewService = reviewService;
-	}
-
 	@PostMapping
 	public BaseResponse<CreateReviewDto.ResponseCreateReviewDto> createReview(
-			@ModelAttribute CreateReviewDto.RequestCreateReviewDto request) {
-		log.info("========================이미지 리스트 크기 : "+request.getImages().size());
+			@RequestBody CreateReviewDto.RequestCreateReviewDto request) {
 		CreateReviewDto.ResponseCreateReviewDto response = reviewService.createReview(request);
 		return new BaseResponse<>(response);
 	}
 	
-	@PostMapping
-	public BaseResponse<String> uploadImage(@RequestParam("image")MultipartFile image) {
-		String str = "";
-		return new BaseResponse<>("");
+	@PostMapping("/uploadImage")
+	public BaseResponse<String> createImageUrl(@RequestParam("image")MultipartFile image) throws IOException {
+		String imageUrl = reviewService.createImageUrl(image);
+		return new BaseResponse<>(imageUrl);
 	}
 	
 	@GetMapping("/{id}")
