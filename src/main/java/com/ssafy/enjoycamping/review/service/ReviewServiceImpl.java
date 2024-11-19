@@ -6,6 +6,7 @@ import java.net.URL;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.Date;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
@@ -96,13 +97,11 @@ public class ReviewServiceImpl implements ReviewService {
 		Review review = reviewDao.selectById(id)
 				.orElseThrow(() -> new NotFoundException(BaseResponseStatus.NOT_EXIST_REVIEW));
 		
-		Set<String> newReviewImages = request.getImageUrls();
+		Set<String> newReviewImages = new HashSet<>(request.getImageUrls());
 		Set<String> originReviewImages = reviewDao.selectAllImageUrl(id);
 		newReviewImages.removeAll(originReviewImages);
-//		reviewDao.insertImages(newReviewImages.stream().map(url -> ReviewImage.from(id, url)).toList()); //추가할 이미지
-		System.out.println("========이미지 수 : "+newReviewImages.size());
-		newReviewImages = request.getImageUrls();
-		System.out.println("========다시 받은 이미지 수 : "+newReviewImages.size());
+		reviewDao.insertImages(newReviewImages.stream().map(url -> ReviewImage.from(id, url)).toList()); //추가할 이미지
+		originReviewImages.removeAll(originReviewImages);
 		
 //		request.updateReview(review);
 //		
