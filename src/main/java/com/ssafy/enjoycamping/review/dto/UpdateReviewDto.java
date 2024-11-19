@@ -18,5 +18,6 @@ public class UpdateReviewDto {
 		private String title;
 		private String content;
 		private Set<String> imageUrls;
+
 	}
 }
