@@ -27,4 +27,13 @@ public class ContentTypeController {
         List<ContentTypeDto> contentTypes = contentTypeService.getContentTypes();
         return new BaseResponse<>(contentTypes);
     }
+
+    /**
+     * 컨텐츠 타입 단건 조회 (태그)
+     */
+    @GetMapping("/{index}")
+    public BaseResponse<ContentTypeDto> getContentType(@PathVariable("index") int index){
+        ContentTypeDto contentType = contentTypeService.getContentType(index);
+        return new BaseResponse<>(contentType);
+    }
 }
