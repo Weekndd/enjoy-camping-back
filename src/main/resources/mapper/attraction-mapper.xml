@@ -53,7 +53,7 @@
     <!-- 동적 SQL을 사용하여 조건에 따른 명소 검색 -->
     <select id="selectByCondition" resultMap="AttractionResultMap">
         SELECT * FROM attractions
-        WHERE 1=1
+        WHERE first_image1 IS NOT NULL AND first_image1 != ''
         <if test="keyword != null and keyword != ''">
             AND (title LIKE CONCAT('%', #{keyword}, '%')
                 OR ADDR1 LIKE CONCAT('%', #{keyword}, '%')
@@ -78,7 +78,7 @@
                 ORDER BY ${pagingAndSorting.order} ${pagingAndSorting.sort}
             </when>
             <otherwise>
-                ORDER BY title ASC  <!-- 기본 정렬 조건 설정 -->
+                ORDER BY no ASC  <!-- 기본 정렬 조건 설정 -->
             </otherwise>
         </choose>
 
@@ -92,7 +92,7 @@
     <select id="countByCondition" resultType="int">
         SELECT COUNT(*)
         FROM attractions
-        WHERE 1=1
+        WHERE first_image1 IS NOT NULL AND first_image1 != ''
         <if test="keyword != null and keyword != ''">
             AND (title LIKE CONCAT('%', #{keyword}, '%')
             OR ADDR1 LIKE CONCAT('%', #{keyword}, '%')
@@ -127,6 +127,7 @@
         JOIN camping c ON c.id = #{campingId}
         WHERE a.area_code = c.sido_code
         AND a.si_gun_gu_code = c.gugun_code
+        AND first_image1 IS NOT NULL AND first_image1 != ''
 
         <!-- 동적 정렬 처리 -->
         <choose>
@@ -151,5 +152,6 @@
         JOIN camping c ON c.id = #{campingId}
         WHERE a.area_code = c.sido_code
         AND a.si_gun_gu_code = c.gugun_code
+        AND first_image1 IS NOT NULL AND first_image1 != ''
     </select>
 </mapper>
