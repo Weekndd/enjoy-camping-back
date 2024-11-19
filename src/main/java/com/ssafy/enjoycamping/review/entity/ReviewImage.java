@@ -8,13 +8,18 @@ import lombok.Setter;
 
 @Getter
 @Setter
-@Builder
 @Alias("reviewImage")
+@Builder
 public class ReviewImage {
 	private int id;
 	private int reviewId;
 	private String imageUrl;
 	private int num;
-	//num은 삭제하는게,,,?
-	//그리고 등록시간 타임스탬프 만들면 좋을듯(새벽 3시에 작성하는 사람도 있으니,,)
+
+	public static ReviewImage from(int reviewId, String url) {
+		return ReviewImage.builder()
+				.reviewId(reviewId)
+				.imageUrl(url)
+				.build();
+	}
 }

@@ -2,15 +2,20 @@ package com.ssafy.enjoycamping.review.service;
 
 
 import java.io.IOException;
+import java.net.URL;
+import java.time.Instant;
+import java.time.temporal.ChronoUnit;
+import java.util.Date;
 import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
+import com.amazonaws.HttpMethod;
 import com.amazonaws.services.s3.AmazonS3;
-import com.amazonaws.services.s3.model.ObjectMetadata;
 import com.ssafy.enjoycamping.common.exception.BaseException;
 import com.ssafy.enjoycamping.common.exception.NotFoundException;
 import com.ssafy.enjoycamping.common.response.BaseResponseStatus;
@@ -25,7 +30,6 @@ import com.ssafy.enjoycamping.trip.camping.dao.CampingDao;
 import com.ssafy.enjoycamping.trip.camping.entity.Camping;
 import com.ssafy.enjoycamping.user.dao.UserDao;
 
-import lombok.AllArgsConstructor;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
@@ -51,36 +55,24 @@ public class ReviewServiceImpl implements ReviewService {
 		Review newReview = request.toEntity();
 		reviewDao.insert(newReview);
 		
-		//미리 저장된 맵핑테이블의 이미지에 ReviewId부여
-		List<String> imageUrls = request.getImageUrls();
-		for(int i=0; i<imageUrls.size(); i++) {
-			ReviewImage reviewImage = ReviewImage.builder()
-					.reviewId(newReview.getId())
-					.imageUrl(imageUrls.get(i))
-					.build();
-			reviewDao.updateImageReviewId(reviewImage);
-		}
+		//이미지 맵핑 테이블에 이미지 URL저장
+		List<ReviewImage> reviewImages = request.getImageUrls().stream()
+				.map(url -> ReviewImage.from(newReview.getId(), url))
+				.toList();
+		reviewDao.insertImages(reviewImages);
+		
 		return CreateReviewDto.ResponseCreateReviewDto.builder()
 				.id(newReview.getId())
 				.build();
 	}
 	
 	@Override
-	public String createImageUrl(MultipartFile image) throws IOException{
+	public URL createImageUrl(MultipartFile image) throws IOException{
 		String s3FileName = UUID.randomUUID().toString() + "_" + image.getOriginalFilename();
-		
-		ObjectMetadata metadata = new ObjectMetadata();
-		metadata.setContentType(image.getContentType()); //업로드된 파일의 MIME 타입을 설정
-		metadata.setContentLength(image.getSize()); //S3는 파일 업로드 전에 크기를 알야하기 떄문에 설정해야함
-		amazonS3.putObject(bucket, s3FileName, image.getInputStream(), metadata);
-		String imageUrl = amazonS3.getUrl(bucket, s3FileName).toString();
-		
-		//이미지 맵핑 테이블에 추가
-		reviewDao.insertImage(ReviewImage.builder()
-				.imageUrl(imageUrl)
-				.build());
-		
-		return imageUrl;
+		//preSignedUrl 발급
+		Date expireTime = Date.from(Instant.now().plus(2,ChronoUnit.HOURS));
+		URL preSignedUrl = amazonS3.generatePresignedUrl(bucket, s3FileName, expireTime, HttpMethod.PUT);
+		return preSignedUrl;
 	}
 
 	@Override
@@ -104,8 +96,17 @@ public class ReviewServiceImpl implements ReviewService {
 		Review review = reviewDao.selectById(id)
 				.orElseThrow(() -> new NotFoundException(BaseResponseStatus.NOT_EXIST_REVIEW));
 		
-		request.updateReview(review);
-		reviewDao.update(review);
+		Set<String> newReviewImages = request.getImageUrls();
+		Set<String> originReviewImages = reviewDao.selectAllImageUrl(id);
+		newReviewImages.removeAll(originReviewImages);
+//		reviewDao.insertImages(newReviewImages.stream().map(url -> ReviewImage.from(id, url)).toList()); //추가할 이미지
+		System.out.println("========이미지 수 : "+newReviewImages.size());
+		newReviewImages = request.getImageUrls();
+		System.out.println("========다시 받은 이미지 수 : "+newReviewImages.size());
+		
+//		request.updateReview(review);
+//		
+//		reviewDao.update(review);
 		return ReviewDto.fromEntity(review);
 	}
 

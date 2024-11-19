@@ -1,6 +1,7 @@
 package com.ssafy.enjoycamping.review.controller;
 
 import java.io.IOException;
+import java.net.URL;
 import java.util.List;
 
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -42,8 +43,8 @@ public class ReviewController {
 	}
 	
 	@PostMapping("/uploadImage")
-	public BaseResponse<String> createImageUrl(@RequestParam("image")MultipartFile image) throws IOException {
-		String imageUrl = reviewService.createImageUrl(image);
+	public BaseResponse<URL> createImageUrl(@RequestParam("image")MultipartFile image) throws IOException {
+		URL imageUrl = reviewService.createImageUrl(image);
 		return new BaseResponse<>(imageUrl);
 	}
 	

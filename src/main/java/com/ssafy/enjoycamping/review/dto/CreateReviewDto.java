@@ -5,6 +5,7 @@ import java.util.List;
 import org.springframework.web.multipart.MultipartFile;
 
 import com.ssafy.enjoycamping.review.entity.Review;
+import com.ssafy.enjoycamping.review.entity.ReviewImage;
 
 import lombok.Builder;
 import lombok.Getter;
