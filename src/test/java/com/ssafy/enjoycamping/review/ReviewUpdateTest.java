@@ -40,7 +40,10 @@ class ReviewUpdateTest {
 		reviewDao.insert(originReview);
 		
 		//WHEN
-		UpdateReviewDto.RequestUpdateReviewDto updateRequest = new RequestUpdateReviewDto("new Title", "new Content");
+		UpdateReviewDto.RequestUpdateReviewDto updateRequest = RequestUpdateReviewDto.builder()
+				.title("new Title")
+				.content("new Content")
+				.build();
 		reviewService.updateReview(updateRequest, originReview.getId());
 		
 		//THEN
