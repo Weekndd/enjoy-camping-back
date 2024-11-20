@@ -6,7 +6,6 @@ import java.util.List;
 
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -42,10 +41,11 @@ public class ReviewController {
 		return new BaseResponse<>(response);
 	}
 	
-	@PostMapping("/uploadImage")
-	public BaseResponse<URL> createImageUrl(@RequestParam("image")MultipartFile image) throws IOException {
-		URL imageUrl = reviewService.createImageUrl(image);
-		return new BaseResponse<>(imageUrl);
+	@PostMapping("/images/presignedUrl")
+	public BaseResponse<URL> createImageUrl(@RequestParam("image")
+	        MultipartFile image) throws IOException {
+	    URL imageUrl = reviewService.createImageUrl(image);
+	    return new BaseResponse<>(imageUrl);
 	}
 	
 	@GetMapping("/{id}")

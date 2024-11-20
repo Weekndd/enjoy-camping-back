@@ -13,6 +13,7 @@ import com.ssafy.enjoycamping.review.dto.ReviewDto;
 import com.ssafy.enjoycamping.review.dto.CreateReviewDto.RequestCreateReviewDto;
 import com.ssafy.enjoycamping.review.entity.Review;
 import com.ssafy.enjoycamping.review.service.ReviewService;
+import com.ssafy.enjoycamping.trip.camping.entity.Camping;
 
 @SpringBootTest
 class ReviewCreateTest {
@@ -24,13 +25,16 @@ class ReviewCreateTest {
 	void ReviewCreateTest() {
 		CreateReviewDto.RequestCreateReviewDto request = RequestCreateReviewDto.builder()
 				.campingId(38)
-				.writerId(1)
-				.sidoCode(32)
-				.gugunCode(13)
 				.title("TestTitle3333")
 				.content("TestContent3333")
 				.build();
-		Review review = request.toEntity();
+		Camping camping = Camping.builder()
+				.id(38)
+				.sidoCode(32)
+				.gugunCode(13)
+				.build();
+				
+		Review review = request.toEntity(camping, 5);
 		assertTrue(review.getTitle()== "TestTitle3333", "successfully inserted");
 		
 		CreateReviewDto.ResponseCreateReviewDto response = reviewService.createReview(request);

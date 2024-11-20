@@ -54,8 +54,10 @@ public class ReviewServiceImpl implements ReviewService {
 //		// JWT로 User 불러오기 //access Token 만료됐는지 확인하기
 //		User user = userDao.selectActiveById(id)
 //				.orElseThrow(() -> new UnauthorizedException(BaseResponseStatus.INVALID_USER_JWT));
+		Camping camping = campingDao.selectById(request.getCampingId())
+				.orElseThrow(()->new NotFoundException(BaseResponseStatus.NOT_EXIST_CAMPING));
 		
-		Review newReview = request.toEntity();
+		Review newReview = request.toEntity(camping,6);
 		reviewDao.insert(newReview);
 		
 		//이미지 맵핑 테이블에 이미지 URL저장
