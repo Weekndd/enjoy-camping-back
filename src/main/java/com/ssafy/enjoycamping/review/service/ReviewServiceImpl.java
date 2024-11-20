@@ -96,6 +96,11 @@ public class ReviewServiceImpl implements ReviewService {
 		Review review = reviewDao.selectById(id)
 				.orElseThrow(() -> new NotFoundException(BaseResponseStatus.NOT_EXIST_REVIEW));
 		
+		Set<String> ImageUrlsToDelete = reviewImageDao.selectImageUrlsByReviewId(id);
+		if(!ImageUrlsToDelete.isEmpty()) {
+			reviewImageDao.delete(ImageUrlsToDelete);
+			deleteImagesFromS3(ImageUrlsToDelete);
+		}
 		reviewDao.delete(id);
 	}
 
