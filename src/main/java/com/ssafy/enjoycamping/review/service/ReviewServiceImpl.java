@@ -5,12 +5,9 @@ import java.io.IOException;
 import java.net.URL;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
-import java.util.Date;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-import java.util.UUID;
+import java.util.*;
 
+import com.amazonaws.services.s3.model.GeneratePresignedUrlRequest;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -61,23 +58,33 @@ public class ReviewServiceImpl implements ReviewService {
 		reviewDao.insert(newReview);
 		
 		//이미지 맵핑 테이블에 이미지 URL저장
-		List<ReviewImage> reviewImages = request.getImageUrls().stream()
-				.map(url -> ReviewImage.from(newReview.getId(), url))
-				.toList();
-		reviewDao.insertImages(reviewImages);
-		
+		List<String> imageUrls = Optional.ofNullable(request.getImageUrls()).orElse(Collections.emptyList());
+		if (!imageUrls.isEmpty()) reviewDao.insertImages(newReview.getId(), imageUrls);
+
+//		if(request.getImageUrls() != null && request.getImageUrls().size() != 0){
+//			List<ReviewImage> reviewImages = request.getImageUrls().stream()
+//					.map(url -> ReviewImage.from(newReview.getId(), url))
+//					.toList();
+//			reviewDao.insertImages(reviewImages);
+//		}
+
 		return CreateReviewDto.ResponseCreateReviewDto.builder()
 				.id(newReview.getId())
 				.build();
 	}
 	
 	@Override
-	public URL createImageUrl(MultipartFile image) throws IOException{
-		String s3FileName = UUID.randomUUID().toString() + "_" + image.getOriginalFilename();
-		//preSignedUrl 발급
+	public URL createImageUrl(String fileName, String contentType) throws IOException {
+		// S3 객체 키 (파일 이름)
+		String objectKey = "uploads/" + fileName;
 		Date expireTime = Date.from(Instant.now().plus(2,ChronoUnit.HOURS));
-		URL preSignedUrl = amazonS3.generatePresignedUrl(bucket, s3FileName, expireTime, HttpMethod.PUT);
-		return preSignedUrl;
+
+		GeneratePresignedUrlRequest request = new GeneratePresignedUrlRequest(bucket, objectKey)
+				.withMethod(HttpMethod.PUT)
+				.withContentType(contentType)
+				.withExpiration(expireTime);
+		//preSignedUrl 발급
+		return amazonS3.generatePresignedUrl(request);
 	}
 
 	@Override
@@ -119,7 +126,8 @@ public class ReviewServiceImpl implements ReviewService {
 		
 		//추가된 이미지가 있다면 추가
 		if(imagesToInsert.size()>0) {
-			reviewDao.insertImages(imagesToInsert.stream().map(url -> ReviewImage.from(id, url)).toList());
+			reviewDao.insertImages(id, imagesToInsert.stream().toList());
+//			reviewDao.insertImages(imagesToInsert.stream().map(url -> ReviewImage.from(id, url)).toList());
 		}
 		//삭제될 이미지가 있다면 삭제
 		if(imagesToDelete.size()>0) {

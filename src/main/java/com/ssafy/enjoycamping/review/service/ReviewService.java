@@ -13,7 +13,7 @@ import com.ssafy.enjoycamping.review.dto.UpdateReviewDto;
 
 public interface ReviewService {
 	CreateReviewDto.ResponseCreateReviewDto createReview(CreateReviewDto.RequestCreateReviewDto request);
-	URL createImageUrl(MultipartFile image) throws IOException;
+	URL createImageUrl(String fileName, String contentType) throws IOException;
 	ReviewDto getReview(int id);
 	void deleteReview(int id);
 	ReviewDto updateReview(UpdateReviewDto.RequestUpdateReviewDto request, int id);

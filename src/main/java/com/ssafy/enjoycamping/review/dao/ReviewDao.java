@@ -17,8 +17,8 @@ public interface ReviewDao {
 	Set<String> selectAllImageUrl(int id);
 	List<Review> selectByCampingId(int campingId);
 	int insert(Review review);
-	int insertImages(List<ReviewImage> images);
-	int deleteImages(List<ReviewImage> images);
+	void insertImages(int reviewId, List<String> imageUrls);
+	void deleteImages(List<ReviewImage> images);
 	int updateImageReviewId(ReviewImage image);
 	
 	void update(Review review);

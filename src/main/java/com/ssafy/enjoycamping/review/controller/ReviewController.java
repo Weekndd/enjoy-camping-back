@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.net.URL;
 import java.util.List;
 
+import com.ssafy.enjoycamping.review.dto.CreatePresignedUrlDto;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
@@ -42,9 +43,8 @@ public class ReviewController {
 	}
 	
 	@PostMapping("/images/presignedUrl")
-	public BaseResponse<URL> createImageUrl(@RequestParam("image")
-	        MultipartFile image) throws IOException {
-	    URL imageUrl = reviewService.createImageUrl(image);
+	public BaseResponse<URL> createImageUrl(@RequestBody CreatePresignedUrlDto dto) throws IOException {
+	    URL imageUrl = reviewService.createImageUrl(dto.getFileName(), dto.getContentType());
 	    return new BaseResponse<>(imageUrl);
 	}
 	
