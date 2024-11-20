@@ -1,11 +1,8 @@
 package com.ssafy.enjoycamping.review.dto;
 
-import java.util.List;
-
-import org.springframework.web.multipart.MultipartFile;
+import java.util.Set;
 
 import com.ssafy.enjoycamping.review.entity.Review;
-import com.ssafy.enjoycamping.review.entity.ReviewImage;
 import com.ssafy.enjoycamping.trip.camping.entity.Camping;
 
 import lombok.Builder;
@@ -23,7 +20,7 @@ public class CreateReviewDto {
 		private int campingId;
 		private String title;
 		private String content;
-		private List<String> imageUrls;
+		private Set<String> imageUrls;
 		
 		public Review toEntity(Camping camping, int userId) {
 			return Review.builder()

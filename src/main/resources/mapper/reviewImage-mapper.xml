@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+        
+<mapper namespace="com.ssafy.enjoycamping.review.dao.ReviewDao">
+
+	<select id="selectImageUrlsByReviewId" resultType="String">
+		SELECT image_url
+		FROM review_image
+		WHERE review_id = #{id}
+	</select>
+	
+	<delete id="delete" parameterType="java.util.Set">
+	    DELETE FROM review_image
+	    WHERE image_url IN
+	    <foreach collection="imageUrls" item="imageUrl" open="(" separator="," close=")">
+	        #{imageUrl}
+	    </foreach>
+	</delete>
+	
+	<insert id="insert" parameterType="map">
+		INSERT INTO review_image (review_id, image_url)
+		VALUES
+		<foreach collection="imageUrls" item="imageUrl" separator=",">
+			(#{reviewId}, #{imageUrl})
+		</foreach>
+	</insert>	
+</mapper>

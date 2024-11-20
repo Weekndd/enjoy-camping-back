@@ -14,11 +14,4 @@ public class ReviewImage {
 	private int id;
 	private int reviewId;
 	private String imageUrl;
-
-	public static ReviewImage from(int reviewId, String url) {
-		return ReviewImage.builder()
-				.reviewId(reviewId)
-				.imageUrl(url)
-				.build();
-	}
 }
