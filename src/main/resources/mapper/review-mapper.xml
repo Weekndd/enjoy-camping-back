@@ -32,6 +32,21 @@
         	#{title}, 
         	#{content})
     </insert>
+    
+    <insert id="insertImages" parameterType="list">
+	    INSERT INTO review_image (review_id, image_url)
+	    VALUES
+		    <foreach collection="list" item="image" separator=",">
+		        (#{image.reviewId}, 
+		        #{image.imageUrl})
+		    </foreach>
+	</insert>
+    
+    <update id="updateImageReviewId">
+    	UPDATE review_image
+    	SET review_id = #{reviewId}
+    	WHERE image_url = #{imageUrl}
+    </update>
 
 	<select id="selectById" parameterType="int" resultMap="ReviewResultMap">
 		SELECT * 
@@ -43,6 +58,14 @@
 		DELETE 
 		FROM review 
 		WHERE id=#{id}
+	</delete>
+	
+	<delete id="deleteImages" parameterType="java.util.List">
+	    DELETE FROM review_image
+	    WHERE image_url IN
+	    <foreach collection="list" item="image" open="(" separator="," close=")">
+	        #{image.imageUrl}
+	    </foreach>
 	</delete>
 
 	<update id="update" parameterType="review">
@@ -97,5 +120,11 @@
 		SELECT *
 		FROM review
 		WHERE writer_id = #{userId}
+	</select>
+	
+	<select id="selectAllImageUrl" resultType="String">
+		SELECT image_url
+		FROM review_image
+		WHERE review_id = #{id}
 	</select>
 </mapper>
