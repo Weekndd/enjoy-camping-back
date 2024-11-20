@@ -16,7 +16,6 @@ import com.ssafy.enjoycamping.review.dto.UpdateReviewDto.RequestUpdateReviewDto;
 import com.ssafy.enjoycamping.review.dto.UpdateReviewDto;
 import com.ssafy.enjoycamping.review.entity.Review;
 import com.ssafy.enjoycamping.review.service.ReviewService;
-import com.ssafy.enjoycamping.trip.camping.entity.Camping;
 
 @SpringBootTest
 class ReviewUpdateTest {
@@ -31,24 +30,17 @@ class ReviewUpdateTest {
 		//GIVEN 
 		CreateReviewDto.RequestCreateReviewDto createRequest = RequestCreateReviewDto.builder()
 				.campingId(38)
+				.writerId(1)
+				.sidoCode(32)
+				.gugunCode(13)
 				.title("reivew 수정 기능 테스트")
 				.content("reivew 수정 기능 테스트")
 				.build();
-		
-		Camping camping = Camping.builder()
-				.id(38)
-				.sidoCode(32)
-				.gugunCode(13)
-				.build();
-		
-		Review originReview = createRequest.toEntity(camping, 5);
+		Review originReview = createRequest.toEntity();
 		reviewDao.insert(originReview);
 		
 		//WHEN
-		UpdateReviewDto.RequestUpdateReviewDto updateRequest = RequestUpdateReviewDto.builder()
-				.title("new Title")
-				.content("new Content")
-				.build();
+		UpdateReviewDto.RequestUpdateReviewDto updateRequest = new RequestUpdateReviewDto("new Title", "new Content");
 		reviewService.updateReview(updateRequest, originReview.getId());
 		
 		//THEN
