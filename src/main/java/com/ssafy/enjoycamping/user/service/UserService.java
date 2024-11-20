@@ -7,15 +7,11 @@ import java.util.stream.Collectors;
 
 import com.ssafy.enjoycamping.common.exception.BadRequestException;
 import com.ssafy.enjoycamping.common.exception.BaseException;
-import com.ssafy.enjoycamping.common.exception.JwtAuthenticationException;
 import com.ssafy.enjoycamping.common.exception.UnauthorizedException;
-import com.ssafy.enjoycamping.common.model.TokenType;
 import com.ssafy.enjoycamping.common.response.BaseResponseStatus;
 import com.ssafy.enjoycamping.trip.attraction.dto.AttractionDto;
 import com.ssafy.enjoycamping.user.dto.*;
 import com.ssafy.enjoycamping.user.util.*;
-
-import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 
 import com.ssafy.enjoycamping.user.dao.UserDao;
@@ -26,9 +22,9 @@ import lombok.RequiredArgsConstructor;
 @Service
 @RequiredArgsConstructor
 public class UserService {
-	private final UserDao userDao;
-	private final RedisTemplate<Integer, String> redisTemplate;
 	
+	private final UserDao userDao;
+
 	public JoinDto.ResponseJoinDto join(JoinDto.RequestJoinDto request) throws BaseException {
 		// 이메일 중복 확인
 		userDao.selectByEmail(EncryptionService.encrypt(request.getEmail()))
@@ -71,15 +67,14 @@ public class UserService {
 		String accessToken = JwtProvider.createAccessToken(JwtPayload.builder()
 						.id(user.getId())
 						.issuedAt(new Date())
-						.tokenType(TokenType.ACCESS)
 						.build());
-		// refresh token 생성 후 Redis에 저장
+		// refresh token 생성
 		String refreshToken = JwtProvider.createRefreshToken(JwtPayload.builder()
 				.id(user.getId())
 				.issuedAt(new Date())
-				.tokenType(TokenType.REFRESH)
 				.build());
-		
+		// TODO: Refresh Token DB에 저장
+
 		return LoginDto.ResponseLoginDto.builder()
 				.accessToken(accessToken)
 				.refreshToken(refreshToken)
@@ -87,22 +82,25 @@ public class UserService {
 	}
 
 	public LoginDto.ResponseLoginDto reissueToken() throws BaseException {
-		int id = JwtProvider.getAuthenticatedUserId(TokenType.REFRESH);
+		int id = JwtProvider.getUserId();
 
 		// JWT로 User 불러오기
 		User user = userDao.selectActiveById(id)
 				.orElseThrow(() -> new UnauthorizedException(BaseResponseStatus.INVALID_USER_JWT));
 		
+		// TODO: DB에서 User의 refresh token 조회해서 비교
+
 		// access token 재발급
 		String accessToken = JwtProvider.createAccessToken(JwtPayload.builder()
 				.id(user.getId())
 				.issuedAt(new Date())
 				.build());
-		// refresh token 재발급 후 Redis에 저장
+		// refresh token 재발급
 		String refreshToken = JwtProvider.createRefreshToken(JwtPayload.builder()
 				.id(user.getId())
 				.issuedAt(new Date())
 				.build());
+		// TODO: Refresh Token DB에 저장
 
 		return LoginDto.ResponseLoginDto.builder()
 				.accessToken(accessToken)
@@ -124,30 +122,36 @@ public class UserService {
 	}
 
 	public FindPwdDto.ResponseFindPwdDto findPassword(FindPwdDto.RequestFindPwdDto request) throws BaseException {
-		//email만 확인해서 뭔가 부실한거 같기도,,,
-		
+		int id = JwtProvider.getUserId();
+
+		// JWT로 User 불러오기
+		User user = userDao.selectActiveById(id)
+				.orElseThrow(() -> new UnauthorizedException(BaseResponseStatus.INVALID_USER_JWT));
+
 		// DB에서 암호화된 이메일로 유저 정보 조회
 		User emailUser = userDao.selectActiveByEmail(EncryptionService.encrypt(request.getEmail()))
 				.orElseThrow(() -> new BadRequestException(BaseResponseStatus.NOT_EXIST_EMAIL));
 
+		// JWT 유저 권한 확인
+		if(user.getId() != emailUser.getId()) throw new UnauthorizedException(BaseResponseStatus.INVALID_USER_JWT);
 		// 이름 확인
-		if(!request.getName().equals(emailUser.getName())) throw new BadRequestException(BaseResponseStatus.INPUT_PARSE_ERROR);
+		if(!user.getName().equals(emailUser.getName())) throw new BadRequestException(BaseResponseStatus.INPUT_PARSE_ERROR);
 
 		// 새로운 랜덤 비밀번호 생성
 	    String randomPassword = RandomPasswordBuilder.getRandomPassword(10);
 
 		// 비밀번호 단방향 해시 암호화
 		String hashedPassword = PasswordEncoder.encode(randomPassword);
-		emailUser.setPassword(hashedPassword);
+		user.setPassword(hashedPassword);
 
-		userDao.update(emailUser);
+		userDao.update(user);
 		return FindPwdDto.ResponseFindPwdDto.builder()
 				.password(randomPassword)
 				.build();
 	}
 
 	public ModifyPwdDto.ResponseModifyPwdDto modifyPassword(ModifyPwdDto.RequestModifyPwdDto request) throws BaseException {
-		int id = JwtProvider.getAuthenticatedUserId(TokenType.ACCESS);
+		int id = JwtProvider.getUserId();
 
 		// JWT로 User 불러오기
 		User user = userDao.selectActiveById(id)
@@ -168,24 +172,23 @@ public class UserService {
 	}
 
 	public void logout() throws BaseException {
-		int id = JwtProvider.getAuthenticatedUserId(TokenType.ACCESS);
+		int id = JwtProvider.getUserId();
 
 		// JWT로 User 불러오기
 		User user = userDao.selectActiveById(id)
 				.orElseThrow(() -> new UnauthorizedException(BaseResponseStatus.INVALID_USER_JWT));
-		
-		JwtProvider.deleteRefreshToken(id);
+
+		// TODO: Token 블랙리스트에 추가
 	}
 
 	public void withdraw() throws BaseException {
-		int id = JwtProvider.getAuthenticatedUserId(TokenType.ACCESS);
+		int id = JwtProvider.getUserId();
 
 		// JWT로 User 불러오기
 		User user = userDao.selectActiveById(id)
 				.orElseThrow(() -> new UnauthorizedException(BaseResponseStatus.INVALID_USER_JWT));
 
 		user.setDeleteFlag(true);
-		JwtProvider.deleteRefreshToken(id);
 		userDao.update(user);
 	}
 }

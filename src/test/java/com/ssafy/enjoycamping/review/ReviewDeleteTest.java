@@ -13,7 +13,6 @@ import com.ssafy.enjoycamping.review.dto.ReviewDto;
 import com.ssafy.enjoycamping.review.dto.CreateReviewDto.RequestCreateReviewDto;
 import com.ssafy.enjoycamping.review.entity.Review;
 import com.ssafy.enjoycamping.review.service.ReviewService;
-import com.ssafy.enjoycamping.trip.camping.entity.Camping;
 
 @SpringBootTest
 class ReviewDeleteTest {
@@ -28,18 +27,13 @@ class ReviewDeleteTest {
 		//Given
 		CreateReviewDto.RequestCreateReviewDto request = RequestCreateReviewDto.builder()
 				.campingId(38)
+				.writerId(1)
+				.sidoCode(32)
+				.gugunCode(13)
 				.title("reivew DELETE 기능 테스트")
 				.content("reivew DELETE 기능 테스트")
 				.build();
-
-		Camping camping = Camping.builder()
-				.id(38)
-				.sidoCode(32)
-				.gugunCode(13)
-				.build();
-		
-		
-		Review review = request.toEntity(camping, 5);
+		Review review = request.toEntity();
 		reviewDao.insert(review);
 		
 		//When

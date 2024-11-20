@@ -10,8 +10,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 
 import com.ssafy.enjoycamping.common.util.PagingAndSorting;
-import com.ssafy.enjoycamping.common.util.PagingAndSorting.ReviewOrder;
-import com.ssafy.enjoycamping.common.util.PagingAndSorting.Sort;
 import com.ssafy.enjoycamping.review.dao.ReviewDao;
 import com.ssafy.enjoycamping.review.entity.Review;
 
@@ -24,17 +22,15 @@ class ReviewDaoTest {
 	@DisplayName("조건으로 리뷰 검색")
 	void selectByCondition() {
 		//GIVEN
-		String keyword = "test";
+		String keyword = "Response";
 		int sidoCode = 32;
 		int gugunCode = 13;
-		ReviewOrder order = ReviewOrder.created_at;
-		Sort sort = Sort.asc;
-		PagingAndSorting pagingAndSorting = new PagingAndSorting(1, 9, order, sort);
+		PagingAndSorting pagingAndSorting = new PagingAndSorting(0, 10, "id", "asc");
 		//WHEN
 		List<Review> reviews = reviewDao.selectByCondition(keyword, sidoCode, gugunCode, pagingAndSorting);
 		//THEN
 		System.out.println(reviews.size());
-		int expectedSize = 7;
+		int expectedSize = 3;
 		int actualSize = reviews.size();
 		assertTrue(expectedSize==actualSize,"예상값과 실제값이 같습니다.");
 		
