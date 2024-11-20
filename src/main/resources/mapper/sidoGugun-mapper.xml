@@ -26,4 +26,12 @@
     	SELECT * FROM guguns WHERE sido_code = #{sidoCode}
     </select>
 
+    <select id="selectSidoById" resultMap="sidoMap">
+        SELECT * FROM sidos WHERE sido_code = #{index}
+    </select>
+
+    <select id="selectGugunById" resultMap="gugunMap">
+        SELECT * FROM guguns WHERE gugun_code = #{index} AND sido_code = #{sidoCode}
+    </select>
+
 </mapper>
