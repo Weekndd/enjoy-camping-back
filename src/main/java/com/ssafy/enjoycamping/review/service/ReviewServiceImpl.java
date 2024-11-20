@@ -13,6 +13,7 @@ import java.util.UUID;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import com.amazonaws.HttpMethod;
@@ -45,15 +46,18 @@ public class ReviewServiceImpl implements ReviewService {
 	
 	@Value("${aws.s3.bucket}")
 	private String bucket;
-
+	
+	@Transactional
 	@Override
 	public CreateReviewDto.ResponseCreateReviewDto createReview(CreateReviewDto.RequestCreateReviewDto request) {
 //		int id = JwtProvider.getUserId();
 //		// JWT로 User 불러오기 //access Token 만료됐는지 확인하기
 //		User user = userDao.selectActiveById(id)
 //				.orElseThrow(() -> new UnauthorizedException(BaseResponseStatus.INVALID_USER_JWT));
+		Camping camping = campingDao.selectById(request.getCampingId())
+				.orElseThrow(()->new NotFoundException(BaseResponseStatus.NOT_EXIST_CAMPING));
 		
-		Review newReview = request.toEntity();
+		Review newReview = request.toEntity(camping,6);
 		reviewDao.insert(newReview);
 		
 		//이미지 맵핑 테이블에 이미지 URL저장
@@ -83,32 +87,59 @@ public class ReviewServiceImpl implements ReviewService {
 		return ReviewDto.fromEntity(review);
 	}
 
+	@Transactional
 	@Override
 	public void deleteReview(int id) {
 		//TODO: 로그인 유저와 작성자 확인 후 맞으면 삭제하는 로직
 		Review review = reviewDao.selectById(id)
 				.orElseThrow(() -> new NotFoundException(BaseResponseStatus.NOT_EXIST_REVIEW));
+		
 		reviewDao.delete(id);
 	}
 
+	@Transactional
 	@Override
 	public ReviewDto updateReview(UpdateReviewDto.RequestUpdateReviewDto request, int id) {
 		//TODO: 로그인 유저와 작성자 확인 후 맞으면 업데이트하는 로직
 		Review review = reviewDao.selectById(id)
 				.orElseThrow(() -> new NotFoundException(BaseResponseStatus.NOT_EXIST_REVIEW));
 		
-		Set<String> newReviewImages = new HashSet<>(request.getImageUrls());
+		//기존 이미지 URL
+		Set<String> newReviewImages = request.getImageUrls();
+		//새로운 이미지 URL
 		Set<String> originReviewImages = reviewDao.selectAllImageUrl(id);
-		newReviewImages.removeAll(originReviewImages);
-		reviewDao.insertImages(newReviewImages.stream().map(url -> ReviewImage.from(id, url)).toList()); //추가할 이미지
-		originReviewImages.removeAll(originReviewImages);
 		
-//		request.updateReview(review);
-//		
-//		reviewDao.update(review);
+		//추가된 이미지
+		Set<String>imagesToInsert = new HashSet<>(newReviewImages);
+		imagesToInsert.removeAll(originReviewImages);
+		
+		//삭제될 이미지
+		Set<String>imagesToDelete = new HashSet<>(originReviewImages);
+		imagesToDelete.removeAll(newReviewImages);
+		
+		//추가된 이미지가 있다면 추가
+		if(imagesToInsert.size()>0) {
+			reviewDao.insertImages(imagesToInsert.stream().map(url -> ReviewImage.from(id, url)).toList());
+		}
+		//삭제될 이미지가 있다면 삭제
+		if(imagesToDelete.size()>0) {
+			//S3 이미지 삭제
+			deleteImagesFromS3(imagesToDelete);
+			reviewDao.deleteImages(imagesToDelete.stream().map(url -> ReviewImage.from(id, url)).toList());
+		}
+		
+		review.updateReview(request);
+		reviewDao.update(review);
 		return ReviewDto.fromEntity(review);
 	}
 
+	private void deleteImagesFromS3(Set<String> imagesToDelete) {
+		for(String imageUrlToDelete : imagesToDelete) {
+			String bucketUrl = "https://"+bucket+".s3.ap-northeast-2.amazonaws.com/";
+			String objectKey = imageUrlToDelete.substring(bucketUrl.length());
+			amazonS3.deleteObject(bucket, objectKey);
+		}
+	}
 	@Override
 	public List<ReviewDto> getReviews() throws BaseException{
 		List<ReviewDto> reviews = reviewDao.selectAll()
