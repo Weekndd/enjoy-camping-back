@@ -67,9 +67,9 @@ public class ReviewController {
 		return new BaseResponse<>(review);
 	}
 	
-	@GetMapping("/camping/{id}")
-	public BaseResponse<List<ReviewDto>> findReviewsByCampingId(@PathVariable int campingId) {
-		List<ReviewDto> reviews = reviewService.getReviewsByCampingId(campingId);
+	@GetMapping("/campings/{index}")
+	public BaseResponse<List<ReviewDto>> findReviewsByCampingId(@PathVariable int index) {
+		List<ReviewDto> reviews = reviewService.getReviewsByCampingId(index);
 		return new BaseResponse<>(reviews);
 	}
 	
