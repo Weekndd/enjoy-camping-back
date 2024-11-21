@@ -2,6 +2,7 @@ package com.ssafy.enjoycamping.user.util;
 
 import java.time.Duration;
 import java.util.Date;
+import java.util.List;
 import java.util.Optional;
 
 import javax.crypto.SecretKey;
@@ -9,11 +10,18 @@ import javax.crypto.SecretKey;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.stereotype.Component;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
 
 import com.ssafy.enjoycamping.common.exception.BaseException;
+import com.ssafy.enjoycamping.common.exception.JwtAuthenticationException;
 import com.ssafy.enjoycamping.common.exception.UnauthorizedException;
 import com.ssafy.enjoycamping.common.model.TokenType;
 import com.ssafy.enjoycamping.common.response.BaseResponseStatus;
@@ -25,11 +33,14 @@ import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
 import jakarta.annotation.PostConstruct;
 import jakarta.servlet.http.HttpServletRequest;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
+@RequiredArgsConstructor
 @Component
 @Slf4j
 public class JwtProvider {
+	private final UserDetailsService userDetailsService;
 	
 	@Value("${spring.application.name}")
     private String issuerConfig;
@@ -128,12 +139,44 @@ public class JwtProvider {
         }
     }
     
-    private static String getToken() throws BaseException {
+//    public static String getToken() throws BaseException {
+//        HttpServletRequest request = ((ServletRequestAttributes) RequestContextHolder.currentRequestAttributes()).getRequest();
+//        String accessToken = request.getHeader("X-ACCESS-TOKEN");
+//
+//        if (accessToken == null || accessToken.length() == 0)
+//            throw new UnauthorizedException(BaseResponseStatus.EMPTY_JWT);
+//        return accessToken;
+//    }
+    
+    
+    //////////수정 후
+    public static  String getToken() throws BaseException {
         HttpServletRequest request = ((ServletRequestAttributes) RequestContextHolder.currentRequestAttributes()).getRequest();
         String accessToken = request.getHeader("X-ACCESS-TOKEN");
-
-        if (accessToken == null || accessToken.length() == 0)
-            throw new UnauthorizedException(BaseResponseStatus.EMPTY_JWT);
         return accessToken;
     }
+
+
+    public void validateToken(String token) {
+		try {
+			Jwts.parser()
+            .verifyWith(SECRET_KEY)
+            .build()
+            .parseSignedClaims(token);
+		
+		} catch (BaseException ex) {
+		    throw new JwtAuthenticationException(BaseResponseStatus.INVALID_JWT);
+		}
+    }
+
+    public Authentication getAuthentication(String token) {
+    	JwtPayload payload = verifyToken(token);
+    	
+        UserDetails principal = userDetailsService.loadUserByUsername(String.valueOf(payload.getId()));
+        //TODO: admin API를 만들었을 때는 UserDetail 구현체의 getAuthorities()를 통해 권한을 가져올 것
+        //DB User테이블에 Role 컬럼 추가해야함..
+        List<GrantedAuthority> authorities = List.of(new SimpleGrantedAuthority("ROLE_USER"));
+        return new UsernamePasswordAuthenticationToken(principal, "", authorities);
+    }
+    
 }
