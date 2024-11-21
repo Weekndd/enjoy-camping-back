@@ -20,6 +20,7 @@ import com.ssafy.enjoycamping.common.exception.NotFoundException;
 import com.ssafy.enjoycamping.common.response.BaseResponseStatus;
 import com.ssafy.enjoycamping.common.util.PagingAndSorting;
 import com.ssafy.enjoycamping.review.dao.ReviewDao;
+import com.ssafy.enjoycamping.review.dao.ReviewImageDao;
 import com.ssafy.enjoycamping.review.dto.CreateReviewDto;
 import com.ssafy.enjoycamping.review.dto.ReviewDto;
 import com.ssafy.enjoycamping.review.dto.UpdateReviewDto;
@@ -37,6 +38,7 @@ import lombok.extern.slf4j.Slf4j;
 @RequiredArgsConstructor
 public class ReviewServiceImpl implements ReviewService {
 	private final ReviewDao reviewDao;
+	private final ReviewImageDao reviewImageDao;
 	private final UserDao userDao;
 	private final CampingDao campingDao;
 	private final AmazonS3 amazonS3;
@@ -54,19 +56,12 @@ public class ReviewServiceImpl implements ReviewService {
 		Camping camping = campingDao.selectById(request.getCampingId())
 				.orElseThrow(()->new NotFoundException(BaseResponseStatus.NOT_EXIST_CAMPING));
 		
-		Review newReview = request.toEntity(camping,6);
+		Review newReview = request.toEntity(camping,6); //TODO: JWT로 ID정보 가져올 것
 		reviewDao.insert(newReview);
 		
 		//이미지 맵핑 테이블에 이미지 URL저장
-		List<String> imageUrls = Optional.ofNullable(request.getImageUrls()).orElse(Collections.emptyList());
-		if (!imageUrls.isEmpty()) reviewDao.insertImages(newReview.getId(), imageUrls);
-
-//		if(request.getImageUrls() != null && request.getImageUrls().size() != 0){
-//			List<ReviewImage> reviewImages = request.getImageUrls().stream()
-//					.map(url -> ReviewImage.from(newReview.getId(), url))
-//					.toList();
-//			reviewDao.insertImages(reviewImages);
-//		}
+		Set<String> imageUrls = Optional.ofNullable(request.getImageUrls()).orElse(Collections.emptySet());
+		if (!imageUrls.isEmpty()) reviewImageDao.insert(newReview.getId(), imageUrls);
 
 		return CreateReviewDto.ResponseCreateReviewDto.builder()
 				.id(newReview.getId())
@@ -101,6 +96,11 @@ public class ReviewServiceImpl implements ReviewService {
 		Review review = reviewDao.selectById(id)
 				.orElseThrow(() -> new NotFoundException(BaseResponseStatus.NOT_EXIST_REVIEW));
 		
+		Set<String> ImageUrlsToDelete = reviewImageDao.selectImageUrlsByReviewId(id);
+		if(!ImageUrlsToDelete.isEmpty()) {
+			reviewImageDao.delete(ImageUrlsToDelete);
+			deleteImagesFromS3(ImageUrlsToDelete);
+		}
 		reviewDao.delete(id);
 	}
 
@@ -114,7 +114,7 @@ public class ReviewServiceImpl implements ReviewService {
 		//기존 이미지 URL
 		Set<String> newReviewImages = request.getImageUrls();
 		//새로운 이미지 URL
-		Set<String> originReviewImages = reviewDao.selectAllImageUrl(id);
+		Set<String> originReviewImages = reviewImageDao.selectImageUrlsByReviewId(id);
 		
 		//추가된 이미지
 		Set<String>imagesToInsert = new HashSet<>(newReviewImages);
@@ -125,15 +125,14 @@ public class ReviewServiceImpl implements ReviewService {
 		imagesToDelete.removeAll(newReviewImages);
 		
 		//추가된 이미지가 있다면 추가
-		if(imagesToInsert.size()>0) {
-			reviewDao.insertImages(id, imagesToInsert.stream().toList());
-//			reviewDao.insertImages(imagesToInsert.stream().map(url -> ReviewImage.from(id, url)).toList());
+		if(!imagesToInsert.isEmpty()) {
+			reviewImageDao.insert(id, imagesToInsert);
 		}
 		//삭제될 이미지가 있다면 삭제
-		if(imagesToDelete.size()>0) {
+		if(!imagesToDelete.isEmpty()) {
 			//S3 이미지 삭제
+			reviewImageDao.delete(imagesToDelete);
 			deleteImagesFromS3(imagesToDelete);
-			reviewDao.deleteImages(imagesToDelete.stream().map(url -> ReviewImage.from(id, url)).toList());
 		}
 		
 		review.updateReview(request);
