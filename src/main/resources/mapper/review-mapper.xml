@@ -61,6 +61,7 @@
 		SELECT *
 		FROM review
 		WHERE camping_id = #{campingId}
+		ORDER BY created_at desc
 	</select>
 	
 	<select id="selectByCondition" resultMap="ReviewResultMap">

@@ -55,21 +55,21 @@ public class ReviewController {
 	}
 	
 	
-	@DeleteMapping("/delete/{id}")
-	public BaseResponse<Integer> deleteReview(@PathVariable int id) {
-		reviewService.deleteReview(id);
-		return new BaseResponse<>(id);
+	@DeleteMapping("/{index}")
+	public BaseResponse<Integer> deleteReview(@PathVariable int index) {
+		reviewService.deleteReview(index);
+		return new BaseResponse<>(index);
 	}
 	
-	@PatchMapping("/update/{id}")
-	public BaseResponse<ReviewDto> updateReview(@RequestBody UpdateReviewDto.RequestUpdateReviewDto request, @PathVariable int id) {
-		ReviewDto review = reviewService.updateReview(request, id);
+	@PatchMapping("/{index}")
+	public BaseResponse<ReviewDto> updateReview(@RequestBody UpdateReviewDto.RequestUpdateReviewDto request, @PathVariable int index) {
+		ReviewDto review = reviewService.updateReview(request, index);
 		return new BaseResponse<>(review);
 	}
 	
-	@GetMapping("/camping/{id}")
-	public BaseResponse<List<ReviewDto>> findReviewsByCampingId(@PathVariable int campingId) {
-		List<ReviewDto> reviews = reviewService.getReviewsByCampingId(campingId);
+	@GetMapping("/campings/{index}")
+	public BaseResponse<List<ReviewDto>> findReviewsByCampingId(@PathVariable int index) {
+		List<ReviewDto> reviews = reviewService.getReviewsByCampingId(index);
 		return new BaseResponse<>(reviews);
 	}
 	
