@@ -65,8 +65,6 @@ public class ReviewServiceImpl implements ReviewService {
 		Set<String> imageUrls = Optional.ofNullable(request.getImageUrls()).orElse(Collections.emptySet());
 		if (!imageUrls.isEmpty()) reviewImageDao.insert(newReview.getId(), imageUrls);
 
-		imageUrls.forEach(log::info);
-		log.info("-----"+imageUrls.size());
 		return CreateReviewDto.ResponseCreateReviewDto.builder()
 				.id(newReview.getId())
 				.build();
@@ -76,12 +74,16 @@ public class ReviewServiceImpl implements ReviewService {
 	public URL createImageUrl(String fileName, String contentType) throws IOException {
 		// S3 객체 키 (파일 이름)
 		String objectKey = "uploads/" + fileName;
-		Date expireTime = Date.from(Instant.now().plus(2,ChronoUnit.HOURS));
+		Date expireTime = Date.from(Instant.now().plus(1,ChronoUnit.MINUTES));
 
 		GeneratePresignedUrlRequest request = new GeneratePresignedUrlRequest(bucket, objectKey)
 				.withMethod(HttpMethod.PUT)
 				.withContentType(contentType)
 				.withExpiration(expireTime);
+
+		// 'x-amz-acl' 헤더를 'public-read'로 설정하여 퍼블릭 읽기 권한 부여
+		request.addRequestParameter("x-amz-acl", "public-read");
+
 		//preSignedUrl 발급
 		return amazonS3.generatePresignedUrl(request);
 	}
@@ -116,9 +118,9 @@ public class ReviewServiceImpl implements ReviewService {
 		Review review = reviewDao.selectById(id)
 				.orElseThrow(() -> new NotFoundException(BaseResponseStatus.NOT_EXIST_REVIEW));
 		
-		//기존 이미지 URL
-		Set<String> newReviewImages = request.getImageUrls();
 		//새로운 이미지 URL
+		Set<String> newReviewImages = Optional.ofNullable(request.getImageUrls()).orElse(new HashSet<>());
+		//기존 이미지 URL
 		Set<String> originReviewImages = reviewImageDao.selectImageUrlsByReviewId(id);
 		
 		//추가된 이미지
