@@ -9,6 +9,7 @@ import java.util.*;
 
 import com.amazonaws.services.s3.model.GeneratePresignedUrlRequest;
 import com.ssafy.enjoycamping.common.service.AsyncS3ImageService;
+import com.ssafy.enjoycamping.trip.camping.dto.CampingDto;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
@@ -55,7 +56,7 @@ public class ReviewServiceImpl implements ReviewService {
 //		// JWT로 User 불러오기 //access Token 만료됐는지 확인하기
 //		User user = userDao.selectActiveById(id)
 //				.orElseThrow(() -> new UnauthorizedException(BaseResponseStatus.INVALID_USER_JWT));
-		Camping camping = campingDao.selectById(request.getCampingId())
+		CampingDto camping = campingDao.selectById(request.getCampingId())
 				.orElseThrow(()->new NotFoundException(BaseResponseStatus.NOT_EXIST_CAMPING));
 		
 		Review newReview = request.toEntity(camping,6); //TODO: JWT로 ID정보 가져올 것
@@ -158,7 +159,7 @@ public class ReviewServiceImpl implements ReviewService {
 	
 	@Override
 	public List<ReviewDto> getReviewsByCampingId(int campingId) throws BaseException{
-		Camping camping = campingDao.selectById(campingId)
+		CampingDto camping = campingDao.selectById(campingId)
 				.orElseThrow(()-> new NotFoundException(BaseResponseStatus.NOT_EXIST_CAMPING));
 		
 		List<ReviewDto> reviews = reviewDao.selectByCampingId(camping.getId())

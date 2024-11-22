@@ -2,6 +2,7 @@ package com.ssafy.enjoycamping.review;
 
 import static org.junit.jupiter.api.Assertions.*;
 
+import com.ssafy.enjoycamping.trip.camping.dto.CampingDto;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -28,7 +29,7 @@ class ReviewCreateTest {
 				.title("TestTitle3333")
 				.content("TestContent3333")
 				.build();
-		Camping camping = Camping.builder()
+		CampingDto camping = CampingDto.builder()
 				.id(38)
 				.sidoCode(32)
 				.gugunCode(13)

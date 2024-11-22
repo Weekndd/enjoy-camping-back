@@ -14,6 +14,7 @@ public interface ReviewDao {
 	Optional<Review> selectById(int id);
 	List<Review> selectAll();
 	List<Review> selectByCampingId(int campingId);
+	int getCountByCampingId(int campingId);
 	int insert(Review review);
 	void update(Review review);
 	void delete(int id);
