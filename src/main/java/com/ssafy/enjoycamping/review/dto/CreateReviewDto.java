@@ -3,6 +3,7 @@ package com.ssafy.enjoycamping.review.dto;
 import java.util.Set;
 
 import com.ssafy.enjoycamping.review.entity.Review;
+import com.ssafy.enjoycamping.trip.camping.dto.CampingDto;
 import com.ssafy.enjoycamping.trip.camping.entity.Camping;
 
 import lombok.Builder;
@@ -22,7 +23,7 @@ public class CreateReviewDto {
 		private String content;
 		private Set<String> imageUrls;
 		
-		public Review toEntity(Camping camping, int userId) {
+		public Review toEntity(CampingDto camping, int userId) {
 			return Review.builder()
 					.writerId(userId)
 					.sidoCode(camping.getSidoCode())

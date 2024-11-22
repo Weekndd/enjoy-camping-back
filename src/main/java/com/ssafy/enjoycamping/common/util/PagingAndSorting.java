@@ -30,7 +30,7 @@ public class PagingAndSorting {
 
     public interface Order {}
     public enum CampingOrder implements Order {
-        name, id;
+        name, id, review_cnt;
     }
     public enum AttractionOrder implements Order {
         title, no;

@@ -26,6 +26,7 @@ public class CampingDto {
     private String introduction;
     private String telephone;
     private String homepageUrl;
+    private int reviewCnt;
 
     public static CampingDto fromEntity(Camping camping){
         return CampingDto.builder()
