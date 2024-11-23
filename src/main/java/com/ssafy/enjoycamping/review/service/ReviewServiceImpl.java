@@ -189,8 +189,5 @@ public class ReviewServiceImpl implements ReviewService {
 				.map(ReviewDto::fromEntity)
 				.toList();
 	}
-	
-	
-
 
 }

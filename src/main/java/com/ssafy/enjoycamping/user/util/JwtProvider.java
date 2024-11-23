@@ -1,7 +1,9 @@
 package com.ssafy.enjoycamping.user.util;
 
+import java.security.Key;
 import java.time.Duration;
 import java.util.Date;
+import java.util.List;
 import java.util.Optional;
 
 import javax.crypto.SecretKey;
@@ -9,27 +11,42 @@ import javax.crypto.SecretKey;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.stereotype.Component;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
 
+import com.ssafy.enjoycamping.auth.ParsedToken;
 import com.ssafy.enjoycamping.common.exception.BaseException;
+import com.ssafy.enjoycamping.common.exception.JwtAuthenticationException;
 import com.ssafy.enjoycamping.common.exception.UnauthorizedException;
 import com.ssafy.enjoycamping.common.model.TokenType;
 import com.ssafy.enjoycamping.common.response.BaseResponseStatus;
 
 import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.Jws;
+import io.jsonwebtoken.JwtException;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
 import jakarta.annotation.PostConstruct;
+import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
+@RequiredArgsConstructor
 @Component
 @Slf4j
 public class JwtProvider {
+	private final UserDetailsService userDetailsService;
 	
 	@Value("${spring.application.name}")
     private String issuerConfig;
@@ -61,6 +78,14 @@ public class JwtProvider {
         REDIS_TEMPLATE = redisTemplate;
     }
 
+    public enum TokenState {
+        VALID,
+        EXPIRED,
+        INVALID
+    }
+    // 새 AccessToken과 RefreshToken을 담는 DTO
+    public record TokenPair(String accessToken, String refreshToken) {}
+    
     public static String createAccessToken(JwtPayload jwtPayload){
         return Jwts.builder()
                 .claim("id", jwtPayload.getId())
@@ -83,6 +108,7 @@ public class JwtProvider {
                 .compact();
 
     	Duration ttl = Duration.ofMillis(REFRESH_TOKEN_EXPIRATION);
+    	//Redis에 RefreshToken저장
     	REDIS_TEMPLATE.opsForValue().set(jwtPayload.getId(), refreshToken, ttl);
         return refreshToken;
     }
@@ -91,7 +117,8 @@ public class JwtProvider {
         REDIS_TEMPLATE.delete(userId);
     }
     
-    public static int getAuthenticatedUserId(TokenType tokenType) throws BaseException {
+    // 없앨 거
+	public static int getAuthenticatedUserId(TokenType tokenType) throws BaseException {
     	String token = getToken(); //헤더에서 토큰 가져옴
     	JwtPayload payload = verifyToken(token); 
     	Integer userId = payload.getId();
@@ -105,6 +132,7 @@ public class JwtProvider {
     	return userId;
     }
     
+	// 없앨 거
     private static void verifyRefreshToken(String token, int userId) throws BaseException {
     	String storedToken = REDIS_TEMPLATE.opsForValue().get(userId);
 
@@ -112,6 +140,40 @@ public class JwtProvider {
             throw new UnauthorizedException(BaseResponseStatus.INVALID_JWT);
         }
     }
+    
+    
+    //////////수정 후
+    public static String getToken() throws BaseException {
+        HttpServletRequest request = ((ServletRequestAttributes) RequestContextHolder.currentRequestAttributes()).getRequest();
+        String accessToken = request.getHeader("X-ACCESS-TOKEN");
+        return accessToken;
+    }
+
+
+    public boolean isValidToken(String token, boolean isRefreshToken) {
+    	 try {
+    		 Jwts.parser()
+             .verifyWith(SECRET_KEY)
+             .build()
+             .parseSignedClaims(token);
+             return true;
+         } catch (ExpiredJwtException e) {
+             // 토큰이 만료된 경우
+             if (!isRefreshToken) throw e; // Access Token이 만료된 경우는 별도 처리
+             return false;
+         } catch (JwtException | IllegalArgumentException e) {
+             return false;
+         }
+    }
+
+    public Authentication getAuthentication(String userId) {
+        UserDetails principal = userDetailsService.loadUserByUsername(userId);
+        //TODO: admin API를 만들었을 때는 UserDetail 구현체의 getAuthorities()를 통해 권한을 가져올 것
+        //DB User테이블에 Role 컬럼 추가해야함..
+        List<GrantedAuthority> authorities = List.of(new SimpleGrantedAuthority("ROLE_USER"));
+        return new UsernamePasswordAuthenticationToken(principal, "", authorities);
+    }
+    
 
     private static JwtPayload verifyToken(String token) throws BaseException {
         try {
@@ -124,16 +186,86 @@ public class JwtProvider {
             		claimsJws.getPayload().getIssuedAt(),
             		TokenType.valueOf(tokenType));
         } catch (Exception e) {
-            throw new UnauthorizedException(BaseResponseStatus.INVALID_JWT);
+            throw e;
         }
     }
     
-    private static String getToken() throws BaseException {
-        HttpServletRequest request = ((ServletRequestAttributes) RequestContextHolder.currentRequestAttributes()).getRequest();
-        String accessToken = request.getHeader("X-ACCESS-TOKEN");
-
-        if (accessToken == null || accessToken.length() == 0)
-            throw new UnauthorizedException(BaseResponseStatus.EMPTY_JWT);
-        return accessToken;
+    // Refresh Token 검증 후 새 토큰 재발급
+    public TokenPair reissueTokens(String refreshToken) {
+    	//RefreshToken이 만료된 경우 예외발생
+    	try {
+    		isValidToken(refreshToken, true); //유효하지 않으면 에러발생
+    		
+    		int userId = getUserIdByToken(refreshToken); //페이로드를 만들기 위한 userId
+	        String storedToken = REDIS_TEMPLATE.opsForValue().get(userId);
+	        if(checkStoredRefreshToken(userId, refreshToken)) {
+//	        	throw new 
+	        }
+	        
+	        String newAccessToken = createAccessToken(JwtPayload.builder()
+					.id(userId)
+					.issuedAt(new Date())
+					.tokenType(TokenType.ACCESS)
+					.build());
+	        String newRefreshToken = JwtProvider.createRefreshToken(JwtPayload.builder()
+					.id(userId)
+					.issuedAt(new Date())
+					.build());
+	        TokenPair tokenPair = new TokenPair(newAccessToken, newRefreshToken);
+	    	return tokenPair;
+    	} 
+    	catch (Exception e) {
+    		throw e;
+    	}
     }
+    
+    
+    private int getUserIdByToken(String token) {
+    	Jws<Claims> claimsJws = Jwts.parser()
+                .verifyWith(SECRET_KEY)
+                .build()
+                .parseSignedClaims(token);
+    	int userId = Integer.parseInt(claimsJws.getPayload().getId());
+    	return userId;
+    }
+    
+    private boolean checkStoredRefreshToken(int userId, String refreshToken) {
+    	String storedToken = REDIS_TEMPLATE.opsForValue().get(userId);
+    	if(refreshToken.equals(storedToken)) {
+    		return true;
+    	}
+    	return false;
+    }
+    
+    public ParsedToken parseToken(String token) {
+        try {
+            Claims claims = Jwts.parser()
+                    .verifyWith(SECRET_KEY)
+                    .build()
+                    .parseSignedClaims(token)
+                    .getPayload();
+            return new ParsedToken(TokenState.VALID, claims);
+        } catch (ExpiredJwtException e) {
+            return new ParsedToken(TokenState.EXPIRED, e.getClaims());
+        } catch (JwtException | IllegalArgumentException e) {
+            return new ParsedToken(TokenState.INVALID, null);
+        }
+    }
+    
+    public Claims getClaims(String token) throws JwtException {
+        return (Claims) Jwts.parser()
+                .verifyWith(SECRET_KEY)
+                .build()
+                .parseSignedClaims(token);
+    }
+	
+	public void saveRefreshToken(int userId, String newRefreshToken) {
+		Duration ttl = Duration.ofMillis(REFRESH_TOKEN_EXPIRATION);
+		REDIS_TEMPLATE.opsForValue().set(userId, newRefreshToken, ttl);
+	}
+	
+	public String getStoredRefreshToken(int userId) {
+		return REDIS_TEMPLATE.opsForValue().get(userId);
+	}
+    
 }
