@@ -13,9 +13,7 @@ import lombok.RequiredArgsConstructor;
 @Component
 @RequiredArgsConstructor
 public class CustomUserDetailsService implements UserDetailsService{
-	private final UserService userService;
-	
-	
+
 	@Override
 	public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
 		int userId = Integer.parseInt(username);

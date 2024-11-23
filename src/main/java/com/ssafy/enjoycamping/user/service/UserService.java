@@ -27,8 +27,8 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class UserService {
 	private final UserDao userDao;
-	private final RedisTemplate<Integer, String> redisTemplate;
-	
+	private final JwtProvider jwtProvider;
+
 	public JoinDto.ResponseJoinDto join(JoinDto.RequestJoinDto request) throws BaseException {
 		// 이메일 중복 확인
 		userDao.selectByEmail(EncryptionService.encrypt(request.getEmail()))
@@ -68,13 +68,13 @@ public class UserService {
 			throw new BadRequestException(BaseResponseStatus.NOT_CORRECT_PASSWORD);
 
 		// access token 생성
-		String accessToken = JwtProvider.createAccessToken(JwtPayload.builder()
+		String accessToken = jwtProvider.createAccessToken(JwtPayload.builder()
 				.id(user.getId())
 				.issuedAt(new Date())
 				.tokenType(TokenType.ACCESS)
 				.build());
 		//Refresh token 생성
-		String refreshToken = JwtProvider.createRefreshToken(JwtPayload.builder()
+		String refreshToken = jwtProvider.createRefreshToken(JwtPayload.builder()
 				.id(user.getId())
 				.issuedAt(new Date())
 				.tokenType(TokenType.REFRESH)
@@ -123,7 +123,7 @@ public class UserService {
 	}
 
 	public ModifyPwdDto.ResponseModifyPwdDto modifyPassword(ModifyPwdDto.RequestModifyPwdDto request) throws BaseException {
-		int id = JwtProvider.getAuthenticatedUserId(TokenType.ACCESS);
+		int id = jwtProvider.getAuthenticatedUserId(TokenType.ACCESS);
 
 		// JWT로 User 불러오기
 		User user = userDao.selectActiveById(id)
@@ -144,24 +144,24 @@ public class UserService {
 	}
 
 	public void logout() throws BaseException {
-		int id = JwtProvider.getAuthenticatedUserId(TokenType.ACCESS);
+		int id = jwtProvider.getAuthenticatedUserId(TokenType.ACCESS);
 
 		// JWT로 User 불러오기
 		User user = userDao.selectActiveById(id)
 				.orElseThrow(() -> new UnauthorizedException(BaseResponseStatus.INVALID_USER_JWT));
-		
-		JwtProvider.deleteRefreshToken(id);
+
+		jwtProvider.deleteRefreshToken(id);
 	}
 
 	public void withdraw() throws BaseException {
-		int id = JwtProvider.getAuthenticatedUserId(TokenType.ACCESS);
+		int id = jwtProvider.getAuthenticatedUserId(TokenType.ACCESS);
 
 		// JWT로 User 불러오기
 		User user = userDao.selectActiveById(id)
 				.orElseThrow(() -> new UnauthorizedException(BaseResponseStatus.INVALID_USER_JWT));
 
 		user.setDeleteFlag(true);
-		JwtProvider.deleteRefreshToken(id);
+		jwtProvider.deleteRefreshToken(id);
 		userDao.update(user);
 	}
 }

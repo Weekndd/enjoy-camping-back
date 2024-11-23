@@ -86,8 +86,8 @@ public class JwtProvider {
     // 새 AccessToken과 RefreshToken을 담는 DTO
     public record TokenPair(String accessToken, String refreshToken) {}
     
-    public static String createAccessToken(JwtPayload jwtPayload){
-        return Jwts.builder()
+    public String createAccessToken(JwtPayload jwtPayload){
+        String token = Jwts.builder()
                 .claim("id", jwtPayload.getId())
                 .claim("tokenType", jwtPayload.getTokenType())
                 .issuer(ISSUER)
@@ -95,10 +95,11 @@ public class JwtProvider {
                 .expiration(new Date(jwtPayload.getIssuedAt().getTime() + ACCESS_TOKEN_EXPIRATION))
                 .signWith(SECRET_KEY, Jwts.SIG.HS512)
                 .compact();
+        return token;
     }
 
-    public static String createRefreshToken(JwtPayload jwtPayload) {
-    	String refreshToken = Jwts.builder()
+    public String createRefreshToken(JwtPayload jwtPayload) {
+        String refreshToken = Jwts.builder()
                 .claim("id", jwtPayload.getId())
                 .claim("tokenType", jwtPayload.getTokenType())
                 .issuer(ISSUER)
@@ -108,17 +109,17 @@ public class JwtProvider {
                 .compact();
 
     	Duration ttl = Duration.ofMillis(REFRESH_TOKEN_EXPIRATION);
-    	//Redis에 RefreshToken저장
+        //Redis에 RefreshToken저장
     	REDIS_TEMPLATE.opsForValue().set(jwtPayload.getId(), refreshToken, ttl);
         return refreshToken;
     }
     
-    public static void deleteRefreshToken(int userId) {
+    public void deleteRefreshToken(int userId) {
         REDIS_TEMPLATE.delete(userId);
     }
     
     // 없앨 거
-	public static int getAuthenticatedUserId(TokenType tokenType) throws BaseException {
+	public int getAuthenticatedUserId(TokenType tokenType) throws BaseException {
     	String token = getToken(); //헤더에서 토큰 가져옴
     	JwtPayload payload = verifyToken(token); 
     	Integer userId = payload.getId();
@@ -133,7 +134,7 @@ public class JwtProvider {
     }
     
 	// 없앨 거
-    private static void verifyRefreshToken(String token, int userId) throws BaseException {
+    private void verifyRefreshToken(String token, int userId) throws BaseException {
     	String storedToken = REDIS_TEMPLATE.opsForValue().get(userId);
 
         if (storedToken == null || !storedToken.equals(token)) {
@@ -143,7 +144,7 @@ public class JwtProvider {
     
     
     //////////수정 후
-    public static String getToken() throws BaseException {
+    public String getToken() throws BaseException {
         HttpServletRequest request = ((ServletRequestAttributes) RequestContextHolder.currentRequestAttributes()).getRequest();
         String accessToken = request.getHeader("X-ACCESS-TOKEN");
         return accessToken;
@@ -175,7 +176,7 @@ public class JwtProvider {
     }
     
 
-    private static JwtPayload verifyToken(String token) throws BaseException {
+    private JwtPayload verifyToken(String token) throws BaseException {
         try {
             Jws<Claims> claimsJws = Jwts.parser()
                     .verifyWith(SECRET_KEY).build()
@@ -207,7 +208,7 @@ public class JwtProvider {
 					.issuedAt(new Date())
 					.tokenType(TokenType.ACCESS)
 					.build());
-	        String newRefreshToken = JwtProvider.createRefreshToken(JwtPayload.builder()
+	        String newRefreshToken = createRefreshToken(JwtPayload.builder()
 					.id(userId)
 					.issuedAt(new Date())
 					.build());
