@@ -48,7 +48,7 @@ public class UserController {
     /**
      * 로그인
      */
-    @PostMapping("login")
+    @PostMapping("/login")
     public BaseResponse<LoginDto.ResponseLoginDto> login(HttpServletRequest httpRequest,
     		HttpServletResponse httpResponse,
     		@RequestBody LoginDto.RequestLoginDto request){
