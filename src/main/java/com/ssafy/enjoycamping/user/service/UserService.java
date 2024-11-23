@@ -69,41 +69,17 @@ public class UserService {
 
 		// access token 생성
 		String accessToken = JwtProvider.createAccessToken(JwtPayload.builder()
-						.id(user.getId())
-						.issuedAt(new Date())
-						.tokenType(TokenType.ACCESS)
-						.build());
-		// refresh token 생성 후 Redis에 저장
+				.id(user.getId())
+				.issuedAt(new Date())
+				.tokenType(TokenType.ACCESS)
+				.build());
+		//Refresh token 생성
 		String refreshToken = JwtProvider.createRefreshToken(JwtPayload.builder()
 				.id(user.getId())
 				.issuedAt(new Date())
 				.tokenType(TokenType.REFRESH)
 				.build());
 		
-		return LoginDto.ResponseLoginDto.builder()
-				.accessToken(accessToken)
-				.refreshToken(refreshToken)
-				.build();
-	}
-
-	public LoginDto.ResponseLoginDto reissueToken() throws BaseException {
-		int id = JwtProvider.getAuthenticatedUserId(TokenType.REFRESH);
-
-		// JWT로 User 불러오기
-		User user = userDao.selectActiveById(id)
-				.orElseThrow(() -> new UnauthorizedException(BaseResponseStatus.INVALID_USER_JWT));
-		
-		// access token 재발급
-		String accessToken = JwtProvider.createAccessToken(JwtPayload.builder()
-				.id(user.getId())
-				.issuedAt(new Date())
-				.build());
-		// refresh token 재발급 후 Redis에 저장
-		String refreshToken = JwtProvider.createRefreshToken(JwtPayload.builder()
-				.id(user.getId())
-				.issuedAt(new Date())
-				.build());
-
 		return LoginDto.ResponseLoginDto.builder()
 				.accessToken(accessToken)
 				.refreshToken(refreshToken)

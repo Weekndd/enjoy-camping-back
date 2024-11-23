@@ -6,6 +6,10 @@ import com.ssafy.enjoycamping.common.response.BaseResponse;
 import com.ssafy.enjoycamping.common.response.BaseResponseStatus;
 import com.ssafy.enjoycamping.user.service.UserService;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.servlet.http.Cookie;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -45,8 +49,20 @@ public class UserController {
      * 로그인
      */
     @PostMapping("login")
-    public BaseResponse<LoginDto.ResponseLoginDto> login(@RequestBody LoginDto.RequestLoginDto request){
+    public BaseResponse<LoginDto.ResponseLoginDto> login(HttpServletRequest httpRequest,
+    		HttpServletResponse httpResponse,
+    		@RequestBody LoginDto.RequestLoginDto request){
         LoginDto.ResponseLoginDto response = userService.login(request);
+        
+        Cookie accessTokenCookie = new Cookie("accessToken", response.getAccessToken());
+        Cookie refreshTokenCookie = new Cookie("refreshToken", response.getRefreshToken());
+        accessTokenCookie.setHttpOnly(true);
+        refreshTokenCookie.setHttpOnly(true);
+        accessTokenCookie.setPath("/");
+        refreshTokenCookie.setPath("/");
+
+        httpResponse.addCookie(accessTokenCookie);
+        httpResponse.addCookie(refreshTokenCookie);
         return new BaseResponse<>(response);
     }
     
@@ -56,15 +72,6 @@ public class UserController {
     @PostMapping("/findPwd")
     public BaseResponse<FindPwdDto.ResponseFindPwdDto> findPassword(@RequestBody FindPwdDto.RequestFindPwdDto request){
         FindPwdDto.ResponseFindPwdDto response = userService.findPassword(request);
-        return new BaseResponse<>(response);
-    }
-
-    /**
-     * Access Token 재발급
-     */
-    @PostMapping("/reissueToken")
-    public BaseResponse<LoginDto.ResponseLoginDto> reissueToken(){
-        LoginDto.ResponseLoginDto response = userService.reissueToken();
         return new BaseResponse<>(response);
     }
 
