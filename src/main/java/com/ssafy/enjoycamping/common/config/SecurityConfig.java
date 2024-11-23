@@ -39,7 +39,6 @@ public class SecurityConfig {
             .formLogin(formLogin -> formLogin.disable()) // 기본 로그인 폼 비활성화
             .httpBasic(httpBasic -> httpBasic.disable()) // HTTP Basic 인증 비활성화
             .addFilterBefore(new JwtAuthenticationFilter(jwtProvider), UsernamePasswordAuthenticationFilter.class); // JWT 필터 추가
-        
         return http.build();
     }
 }

@@ -29,7 +29,9 @@ public enum BaseResponseStatus {
      * Review
      */
     NOT_EXIST_REVIEW(false,HttpStatus.NOT_FOUND.value(),"존재하지 않는 리뷰입니다."),
-    
+    FAIL_DELETE_IMAGE(false,HttpStatus.INTERNAL_SERVER_ERROR.value(),"S3에 이미지 삭제를 실패하였습니다."),
+
+
 
     /**
      * 자유롭게 에러코드 추가

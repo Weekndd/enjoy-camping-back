@@ -9,7 +9,12 @@ import com.amazonaws.auth.BasicAWSCredentials;
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.AmazonS3Client;
 import com.amazonaws.services.s3.AmazonS3ClientBuilder;
+import org.springframework.scheduling.annotation.Async;
+import org.springframework.scheduling.annotation.EnableAsync;
 
+import java.util.Set;
+
+@EnableAsync
 @Configuration
 public class S3Config {
 	@Value("${aws.s3.accessKey}")
@@ -26,11 +31,11 @@ public class S3Config {
 	// ->Bean생성될 때 메서드의 이름으로 생성 되어서 메서드 이름과 사용할 객체의 이름을 맞춰서 해야한다고 함
 	@Bean
 	public AmazonS3Client amazonS3Client() { 
-	      BasicAWSCredentials awsCredentials= new BasicAWSCredentials(accessKey, secretKey);
-	      return (AmazonS3Client)AmazonS3ClientBuilder.standard()
-	         .withRegion(region)
-	         .withCredentials(new AWSStaticCredentialsProvider(awsCredentials))
-	         .build();
-	   }
+		BasicAWSCredentials awsCredentials= new BasicAWSCredentials(accessKey, secretKey);
+		return (AmazonS3Client)AmazonS3ClientBuilder.standard()
+		 .withRegion(region)
+		 .withCredentials(new AWSStaticCredentialsProvider(awsCredentials))
+		 .build();
+	}
 	
 }

@@ -27,8 +27,9 @@ public class CampingDistanceDto {
     private String telephone;
     private String homepageUrl;
     private Double distance;
+    private int reviewCnt;
 
-    public static CampingDistanceDto fromEntity(Camping camping){
+    public static CampingDistanceDto fromEntity(Camping camping, int reviewCnt){
         return CampingDistanceDto.builder()
                 .id(camping.getId())
                 .name(camping.getName())
@@ -43,6 +44,7 @@ public class CampingDistanceDto {
                 .introduction(camping.getIntroduction())
                 .telephone(camping.getTelephone())
                 .homepageUrl(camping.getHomepageUrl())
+                .reviewCnt(reviewCnt)
                 .build();
     }
 }

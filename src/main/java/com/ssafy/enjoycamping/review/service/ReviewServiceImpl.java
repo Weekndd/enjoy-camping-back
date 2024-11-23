@@ -8,7 +8,10 @@ import java.time.temporal.ChronoUnit;
 import java.util.*;
 
 import com.amazonaws.services.s3.model.GeneratePresignedUrlRequest;
+import com.ssafy.enjoycamping.common.service.AsyncS3ImageService;
+import com.ssafy.enjoycamping.trip.camping.dto.CampingDto;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -42,9 +45,9 @@ public class ReviewServiceImpl implements ReviewService {
 	private final UserDao userDao;
 	private final CampingDao campingDao;
 	private final AmazonS3 amazonS3;
-	
 	@Value("${aws.s3.bucket}")
 	private String bucket;
+	private final AsyncS3ImageService asyncS3ImageService;
 	
 	@Transactional
 	@Override
@@ -53,12 +56,12 @@ public class ReviewServiceImpl implements ReviewService {
 //		// JWT로 User 불러오기 //access Token 만료됐는지 확인하기
 //		User user = userDao.selectActiveById(id)
 //				.orElseThrow(() -> new UnauthorizedException(BaseResponseStatus.INVALID_USER_JWT));
-		Camping camping = campingDao.selectById(request.getCampingId())
+		CampingDto camping = campingDao.selectById(request.getCampingId())
 				.orElseThrow(()->new NotFoundException(BaseResponseStatus.NOT_EXIST_CAMPING));
 		
 		Review newReview = request.toEntity(camping,6); //TODO: JWT로 ID정보 가져올 것
 		reviewDao.insert(newReview);
-		
+
 		//이미지 맵핑 테이블에 이미지 URL저장
 		Set<String> imageUrls = Optional.ofNullable(request.getImageUrls()).orElse(Collections.emptySet());
 		if (!imageUrls.isEmpty()) reviewImageDao.insert(newReview.getId(), imageUrls);
@@ -72,12 +75,16 @@ public class ReviewServiceImpl implements ReviewService {
 	public URL createImageUrl(String fileName, String contentType) throws IOException {
 		// S3 객체 키 (파일 이름)
 		String objectKey = "uploads/" + fileName;
-		Date expireTime = Date.from(Instant.now().plus(2,ChronoUnit.HOURS));
+		Date expireTime = Date.from(Instant.now().plus(1,ChronoUnit.MINUTES));
 
 		GeneratePresignedUrlRequest request = new GeneratePresignedUrlRequest(bucket, objectKey)
 				.withMethod(HttpMethod.PUT)
 				.withContentType(contentType)
 				.withExpiration(expireTime);
+
+		// 'x-amz-acl' 헤더를 'public-read'로 설정하여 퍼블릭 읽기 권한 부여
+		request.addRequestParameter("x-amz-acl", "public-read");
+
 		//preSignedUrl 발급
 		return amazonS3.generatePresignedUrl(request);
 	}
@@ -99,9 +106,10 @@ public class ReviewServiceImpl implements ReviewService {
 		Set<String> ImageUrlsToDelete = reviewImageDao.selectImageUrlsByReviewId(id);
 		if(!ImageUrlsToDelete.isEmpty()) {
 			reviewImageDao.delete(ImageUrlsToDelete);
-			deleteImagesFromS3(ImageUrlsToDelete);
+			asyncS3ImageService.deleteImagesFromS3(ImageUrlsToDelete);
 		}
 		reviewDao.delete(id);
+		log.info("삭제 완료");
 	}
 
 	@Transactional
@@ -111,9 +119,9 @@ public class ReviewServiceImpl implements ReviewService {
 		Review review = reviewDao.selectById(id)
 				.orElseThrow(() -> new NotFoundException(BaseResponseStatus.NOT_EXIST_REVIEW));
 		
-		//기존 이미지 URL
-		Set<String> newReviewImages = request.getImageUrls();
 		//새로운 이미지 URL
+		Set<String> newReviewImages = Optional.ofNullable(request.getImageUrls()).orElse(new HashSet<>());
+		//기존 이미지 URL
 		Set<String> originReviewImages = reviewImageDao.selectImageUrlsByReviewId(id);
 		
 		//추가된 이미지
@@ -132,7 +140,7 @@ public class ReviewServiceImpl implements ReviewService {
 		if(!imagesToDelete.isEmpty()) {
 			//S3 이미지 삭제
 			reviewImageDao.delete(imagesToDelete);
-			deleteImagesFromS3(imagesToDelete);
+			asyncS3ImageService.deleteImagesFromS3(imagesToDelete);
 		}
 		
 		review.updateReview(request);
@@ -140,13 +148,6 @@ public class ReviewServiceImpl implements ReviewService {
 		return ReviewDto.fromEntity(review);
 	}
 
-	private void deleteImagesFromS3(Set<String> imagesToDelete) {
-		for(String imageUrlToDelete : imagesToDelete) {
-			String bucketUrl = "https://"+bucket+".s3.ap-northeast-2.amazonaws.com/";
-			String objectKey = imageUrlToDelete.substring(bucketUrl.length());
-			amazonS3.deleteObject(bucket, objectKey);
-		}
-	}
 	@Override
 	public List<ReviewDto> getReviews() throws BaseException{
 		List<ReviewDto> reviews = reviewDao.selectAll()
@@ -158,7 +159,7 @@ public class ReviewServiceImpl implements ReviewService {
 	
 	@Override
 	public List<ReviewDto> getReviewsByCampingId(int campingId) throws BaseException{
-		Camping camping = campingDao.selectById(campingId)
+		CampingDto camping = campingDao.selectById(campingId)
 				.orElseThrow(()-> new NotFoundException(BaseResponseStatus.NOT_EXIST_CAMPING));
 		
 		List<ReviewDto> reviews = reviewDao.selectByCampingId(camping.getId())
@@ -188,8 +189,5 @@ public class ReviewServiceImpl implements ReviewService {
 				.map(ReviewDto::fromEntity)
 				.toList();
 	}
-	
-	
-
 
 }
