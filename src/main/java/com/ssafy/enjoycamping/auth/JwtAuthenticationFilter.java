@@ -78,7 +78,8 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             handleRefreshToken(refreshToken.get(), response);
         } 
         else {
-            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+            //accessToken과 refreshToken 둘 다 없는 경우
+            response.setStatus(HttpServletResponse.SC_OK);
         }
         filterChain.doFilter(request, response);
     }
@@ -93,7 +94,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                 String storedToken = jwtProvider.getStoredRefreshToken(Integer.parseInt(userId));
                 if (refreshToken.equals(storedToken)) {
                     issueNewTokens(response, userId);
-                    log.warn("accessToken이 갱신됨");
+                    log.info("accessToken이 갱신됨");
                     Authentication authentication = jwtProvider.getAuthentication(userId);
                     SecurityContextHolder.getContext().setAuthentication(authentication);
                 } 
@@ -124,12 +125,12 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                 .findFirst();
     }
 	private void issueNewTokens(HttpServletResponse response, String userId) {
-        String newAccessToken = JwtProvider.createAccessToken(JwtPayload.builder()
+        String newAccessToken = jwtProvider.createAccessToken(JwtPayload.builder()
 				.id(Integer.parseInt(userId))
 				.issuedAt(new Date())
 				.tokenType(TokenType.ACCESS)
 				.build());
-        String newRefreshToken = JwtProvider.createRefreshToken(JwtPayload.builder()
+        String newRefreshToken = jwtProvider.createRefreshToken(JwtPayload.builder()
 				.id(Integer.parseInt(userId))
 				.issuedAt(new Date())
 				.tokenType(TokenType.REFRESH)
