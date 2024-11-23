@@ -108,6 +108,7 @@ public class JwtProvider {
                 .compact();
 
     	Duration ttl = Duration.ofMillis(REFRESH_TOKEN_EXPIRATION);
+    	//Redis에 RefreshToken저장
     	REDIS_TEMPLATE.opsForValue().set(jwtPayload.getId(), refreshToken, ttl);
         return refreshToken;
     }
@@ -165,10 +166,8 @@ public class JwtProvider {
          }
     }
 
-    public Authentication getAuthentication(String token) {
-    	JwtPayload payload = verifyToken(token);
-    	
-        UserDetails principal = userDetailsService.loadUserByUsername(String.valueOf(payload.getId()));
+    public Authentication getAuthentication(String userId) {
+        UserDetails principal = userDetailsService.loadUserByUsername(userId);
         //TODO: admin API를 만들었을 때는 UserDetail 구현체의 getAuthorities()를 통해 권한을 가져올 것
         //DB User테이블에 Role 컬럼 추가해야함..
         List<GrantedAuthority> authorities = List.of(new SimpleGrantedAuthority("ROLE_USER"));

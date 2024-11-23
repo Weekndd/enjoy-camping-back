@@ -40,40 +40,80 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                                     FilterChain filterChain) throws ServletException, IOException {
         Optional<String> accessToken = getTokenFromCookie(request, "accessToken");
         Optional<String> refreshToken = getTokenFromCookie(request, "refreshToken");
-
+        
         if (accessToken.isPresent()) {
             ParsedToken parsedAccessToken = jwtProvider.parseToken(accessToken.get());
 
             switch (parsedAccessToken.getState()) {
                 case VALID -> {
-                    String userId = (String)parsedAccessToken.getClaims().get("id");
+                    String userId = String.valueOf(parsedAccessToken.getClaims().get("id"));
+                    Authentication authentication = jwtProvider.getAuthentication(userId);
+                    SecurityContextHolder.getContext().setAuthentication(authentication);
                     issueNewTokens(response, userId);
                     filterChain.doFilter(request, response);
-                    filterChain.doFilter(request, response);
                     return;
                 }
-                case EXPIRED -> {
-                    if (refreshToken.isPresent()) {
+                case EXPIRED -> { //accessToken 만료
+                    if (refreshToken.isPresent()) { //RefreshToken 비어있는 경우
+                    	log.warn("accessToken 만료됨");
                         handleRefreshToken(refreshToken.get(), response);
-                    } else {
+                        filterChain.doFilter(request, response);
+                        return;
+                    } 
+                    else { //accessToken 만료되고 refreshToken 비어있는 경우
+                    	log.error("accessToken만료, refreshToken 비어있음");
                         response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+                        filterChain.doFilter(request, response);
+                        return;
                     }
-                    filterChain.doFilter(request, response);
-                    return;
+                    
                 }
                 case INVALID -> {
+                	log.error("accessToken 유효하지 않음");
                     response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
                 }
             }
-        } else if (refreshToken.isPresent()) {
+        } 
+        else if (refreshToken.isPresent()) { //accessToken부재 RefreshToken 존재
             handleRefreshToken(refreshToken.get(), response);
-        } else {
+        } 
+        else {
             response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
         }
         filterChain.doFilter(request, response);
     }
 	
-    
+	private void handleRefreshToken(String refreshToken, HttpServletResponse response) {
+        ParsedToken parsedRefreshToken = jwtProvider.parseToken(refreshToken);
+
+        switch(parsedRefreshToken.getState()) {
+        	case VALID -> { //refreshToken 유효한 경우
+        		String userId = String.valueOf(parsedRefreshToken.getClaims().get("id"));
+                // Redis에 저장된 Refresh Token과 비교
+                String storedToken = jwtProvider.getStoredRefreshToken(Integer.parseInt(userId));
+                if (refreshToken.equals(storedToken)) {
+                    issueNewTokens(response, userId);
+                    log.warn("accessToken이 갱신됨");
+                    Authentication authentication = jwtProvider.getAuthentication(userId);
+                    SecurityContextHolder.getContext().setAuthentication(authentication);
+                } 
+                else {
+                	log.error("refreshToken이 저장된refreshToken과 다름");
+                    response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+                }
+        	}
+        	case EXPIRED -> {
+        		log.error("accessToken, refreshToken 둘 다 만료 됨");
+        		response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+        	}
+        	case INVALID -> {
+        		log.error("accessToken 만료, refreshToken 유효하지 않음");
+        		response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+        	}
+        } 
+        
+    }
+	
 	private Optional<String> getTokenFromCookie(HttpServletRequest request, String tokenName) {
         if (request.getCookies() == null) {
             return Optional.empty();
@@ -83,31 +123,13 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                 .map(Cookie::getValue)
                 .findFirst();
     }
-	private void handleRefreshToken(String refreshToken, HttpServletResponse response) {
-        ParsedToken parsedRefreshToken = jwtProvider.parseToken(refreshToken);
-
-        if (parsedRefreshToken.getState() == JwtProvider.TokenState.VALID) {
-            String userId = parsedRefreshToken.getClaims().getSubject();
-
-            // Redis에 저장된 Refresh Token과 비교
-            String storedToken = jwtProvider.getStoredRefreshToken(Integer.parseInt(userId));
-            if (refreshToken.equals(storedToken)) {
-                issueNewTokens(response, userId);
-            } else {
-                response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-            }
-        } else {
-            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-        }
-    }
-	
 	private void issueNewTokens(HttpServletResponse response, String userId) {
         String newAccessToken = JwtProvider.createAccessToken(JwtPayload.builder()
 				.id(Integer.parseInt(userId))
 				.issuedAt(new Date())
 				.tokenType(TokenType.ACCESS)
 				.build());
-        String newRefreshToken = JwtProvider.createAccessToken(JwtPayload.builder()
+        String newRefreshToken = JwtProvider.createRefreshToken(JwtPayload.builder()
 				.id(Integer.parseInt(userId))
 				.issuedAt(new Date())
 				.tokenType(TokenType.REFRESH)
@@ -116,21 +138,13 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         jwtProvider.saveRefreshToken(Integer.parseInt(userId), newRefreshToken);
 
         Cookie accessTokenCookie = new Cookie("accessToken", newAccessToken);
-        accessTokenCookie.setHttpOnly(true);
         Cookie refreshTokenCookie = new Cookie("refreshToken", newRefreshToken);
+        accessTokenCookie.setPath("/");
+        refreshTokenCookie.setPath("/");
+        accessTokenCookie.setHttpOnly(true);
         refreshTokenCookie.setHttpOnly(true);
 
         response.addCookie(accessTokenCookie);
         response.addCookie(refreshTokenCookie);
     }
-	
-    private void setCookie(HttpServletResponse response, String name, String value) {
-        Cookie cookie = new Cookie(name, value);
-        cookie.setHttpOnly(true);
-        cookie.setPath("/");
-        cookie.setMaxAge(7 * 24 * 60 * 60);//쿠키의 유효시간 7일
-        response.addCookie(cookie);
-    }
-    
-    
 }
