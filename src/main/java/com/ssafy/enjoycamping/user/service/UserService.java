@@ -123,7 +123,7 @@ public class UserService {
 	}
 
 	public ModifyPwdDto.ResponseModifyPwdDto modifyPassword(ModifyPwdDto.RequestModifyPwdDto request) throws BaseException {
-		int id = jwtProvider.getAuthenticatedUserId(TokenType.ACCESS);
+		int id = jwtProvider.getAuthenticatedUserId();
 
 		// JWT로 User 불러오기
 		User user = userDao.selectActiveById(id)
@@ -144,7 +144,7 @@ public class UserService {
 	}
 
 	public void logout() throws BaseException {
-		int id = jwtProvider.getAuthenticatedUserId(TokenType.ACCESS);
+		int id = jwtProvider.getAuthenticatedUserId();
 
 		// JWT로 User 불러오기
 		User user = userDao.selectActiveById(id)
@@ -154,7 +154,7 @@ public class UserService {
 	}
 
 	public void withdraw() throws BaseException {
-		int id = jwtProvider.getAuthenticatedUserId(TokenType.ACCESS);
+		int id = jwtProvider.getAuthenticatedUserId();
 
 		// JWT로 User 불러오기
 		User user = userDao.selectActiveById(id)

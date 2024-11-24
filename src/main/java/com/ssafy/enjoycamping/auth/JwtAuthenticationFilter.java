@@ -78,7 +78,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             handleRefreshToken(refreshToken.get(), response);
         } 
         else {
-            //accessToken과 refreshToken 둘 다 없는 경우
+        	//accessToken과 refreshToken 둘 다 없는 경우
             response.setStatus(HttpServletResponse.SC_OK);
         }
         filterChain.doFilter(request, response);
@@ -91,10 +91,9 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         	case VALID -> { //refreshToken 유효한 경우
         		String userId = String.valueOf(parsedRefreshToken.getClaims().get("id"));
                 // Redis에 저장된 Refresh Token과 비교
-                String storedToken = jwtProvider.getStoredRefreshToken(Integer.parseInt(userId));
-                if (refreshToken.equals(storedToken)) {
+                if(jwtProvider.checkStoredRefreshToken(userId, refreshToken)) {
                     issueNewTokens(response, userId);
-                    log.info("accessToken이 갱신됨");
+                    log.warn("accessToken이 갱신됨");
                     Authentication authentication = jwtProvider.getAuthentication(userId);
                     SecurityContextHolder.getContext().setAuthentication(authentication);
                 } 
@@ -112,7 +111,6 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         		response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
         	}
         } 
-        
     }
 	
 	private Optional<String> getTokenFromCookie(HttpServletRequest request, String tokenName) {
