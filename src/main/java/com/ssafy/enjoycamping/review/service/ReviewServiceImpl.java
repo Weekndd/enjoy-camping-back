@@ -8,6 +8,7 @@ import java.time.temporal.ChronoUnit;
 import java.util.*;
 
 import com.amazonaws.services.s3.model.GeneratePresignedUrlRequest;
+import com.ssafy.enjoycamping.common.exception.ForbiddenException;
 import com.ssafy.enjoycamping.common.service.AsyncS3ImageService;
 import com.ssafy.enjoycamping.trip.camping.dto.CampingDto;
 import org.springframework.beans.factory.annotation.Value;
@@ -51,15 +52,11 @@ public class ReviewServiceImpl implements ReviewService {
 	
 	@Transactional
 	@Override
-	public CreateReviewDto.ResponseCreateReviewDto createReview(CreateReviewDto.RequestCreateReviewDto request) {
-//		int id = JwtProvider.getUserId();
-//		// JWT로 User 불러오기 //access Token 만료됐는지 확인하기
-//		User user = userDao.selectActiveById(id)
-//				.orElseThrow(() -> new UnauthorizedException(BaseResponseStatus.INVALID_USER_JWT));
+	public CreateReviewDto.ResponseCreateReviewDto createReview(int userId, CreateReviewDto.RequestCreateReviewDto request) {
 		CampingDto camping = campingDao.selectById(request.getCampingId())
 				.orElseThrow(()->new NotFoundException(BaseResponseStatus.NOT_EXIST_CAMPING));
 		
-		Review newReview = request.toEntity(camping,6); //TODO: JWT로 ID정보 가져올 것
+		Review newReview = request.toEntity(camping, userId);
 		reviewDao.insert(newReview);
 
 		//이미지 맵핑 테이블에 이미지 URL저장
@@ -98,11 +95,12 @@ public class ReviewServiceImpl implements ReviewService {
 
 	@Transactional
 	@Override
-	public void deleteReview(int id) {
-		//TODO: 로그인 유저와 작성자 확인 후 맞으면 삭제하는 로직
+	public void deleteReview(int userId, int id) {
 		Review review = reviewDao.selectById(id)
 				.orElseThrow(() -> new NotFoundException(BaseResponseStatus.NOT_EXIST_REVIEW));
-		
+
+		if(review.getWriterId() != userId) throw new ForbiddenException(BaseResponseStatus.INVALID_USER_JWT);
+
 		Set<String> ImageUrlsToDelete = reviewImageDao.selectImageUrlsByReviewId(id);
 		if(!ImageUrlsToDelete.isEmpty()) {
 			reviewImageDao.delete(ImageUrlsToDelete);
@@ -114,10 +112,11 @@ public class ReviewServiceImpl implements ReviewService {
 
 	@Transactional
 	@Override
-	public ReviewDto updateReview(UpdateReviewDto.RequestUpdateReviewDto request, int id) {
-		//TODO: 로그인 유저와 작성자 확인 후 맞으면 업데이트하는 로직
+	public ReviewDto updateReview(int userId, UpdateReviewDto.RequestUpdateReviewDto request, int id) {
 		Review review = reviewDao.selectById(id)
 				.orElseThrow(() -> new NotFoundException(BaseResponseStatus.NOT_EXIST_REVIEW));
+
+		if(review.getWriterId() != userId) throw new ForbiddenException(BaseResponseStatus.INVALID_USER_JWT);
 		
 		//새로운 이미지 URL
 		Set<String> newReviewImages = Optional.ofNullable(request.getImageUrls()).orElse(new HashSet<>());

@@ -16,7 +16,6 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.multipart.MultipartFile;
 
 import com.ssafy.enjoycamping.common.response.BaseResponse;
 import com.ssafy.enjoycamping.common.util.PagingAndSorting;
@@ -39,8 +38,11 @@ public class ReviewController {
 
 	@PostMapping
 	public BaseResponse<CreateReviewDto.ResponseCreateReviewDto> createReview(
-			@RequestBody CreateReviewDto.RequestCreateReviewDto request) {
-		CreateReviewDto.ResponseCreateReviewDto response = reviewService.createReview(request);
+			@RequestBody CreateReviewDto.RequestCreateReviewDto request,
+			Authentication authentication) {
+		UserPrincipal userPrincipal = (UserPrincipal) authentication.getPrincipal();
+
+		CreateReviewDto.ResponseCreateReviewDto response = reviewService.createReview(userPrincipal.getUserId(), request);
 		return new BaseResponse<>(response);
 	}
 	
@@ -58,14 +60,18 @@ public class ReviewController {
 	
 	
 	@DeleteMapping("/{index}")
-	public BaseResponse<Integer> deleteReview(@PathVariable int index) {
-		reviewService.deleteReview(index);
+	public BaseResponse<Integer> deleteReview(@PathVariable int index, Authentication authentication) {
+		UserPrincipal userPrincipal = (UserPrincipal) authentication.getPrincipal();
+
+		reviewService.deleteReview(userPrincipal.getUserId(), index);
 		return new BaseResponse<>(index);
 	}
 	
 	@PatchMapping("/{index}")
-	public BaseResponse<ReviewDto> updateReview(@RequestBody UpdateReviewDto.RequestUpdateReviewDto request, @PathVariable int index) {
-		ReviewDto review = reviewService.updateReview(request, index);
+	public BaseResponse<ReviewDto> updateReview(@RequestBody UpdateReviewDto.RequestUpdateReviewDto request, @PathVariable int index, Authentication authentication) {
+		UserPrincipal userPrincipal = (UserPrincipal) authentication.getPrincipal();
+
+		ReviewDto review = reviewService.updateReview(userPrincipal.getUserId(), request, index);
 		return new BaseResponse<>(review);
 	}
 	

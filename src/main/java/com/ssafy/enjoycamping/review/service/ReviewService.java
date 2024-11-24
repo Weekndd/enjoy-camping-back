@@ -12,11 +12,11 @@ import com.ssafy.enjoycamping.review.dto.ReviewDto;
 import com.ssafy.enjoycamping.review.dto.UpdateReviewDto;
 
 public interface ReviewService {
-	CreateReviewDto.ResponseCreateReviewDto createReview(CreateReviewDto.RequestCreateReviewDto request);
+	CreateReviewDto.ResponseCreateReviewDto createReview(int userId, CreateReviewDto.RequestCreateReviewDto request);
 	URL createImageUrl(String fileName, String contentType) throws IOException;
 	ReviewDto getReview(int id);
-	void deleteReview(int id);
-	ReviewDto updateReview(UpdateReviewDto.RequestUpdateReviewDto request, int id);
+	void deleteReview(int userId, int id);
+	ReviewDto updateReview(int userId, UpdateReviewDto.RequestUpdateReviewDto request, int id);
 	List<ReviewDto> getReviews();
 	List<ReviewDto> getReviewsByCampingId(int campingId);
 	List<ReviewDto> getReviewsByCondition(String keyword, String sidoCode, String gugunCode, PagingAndSorting pagingAndSorting);
