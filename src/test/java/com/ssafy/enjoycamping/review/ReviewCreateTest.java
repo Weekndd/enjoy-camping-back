@@ -38,7 +38,7 @@ class ReviewCreateTest {
 		Review review = request.toEntity(camping, 5);
 		assertTrue(review.getTitle()== "TestTitle3333", "successfully inserted");
 		
-		CreateReviewDto.ResponseCreateReviewDto response = reviewService.createReview(request);
+		CreateReviewDto.ResponseCreateReviewDto response = reviewService.createReview(5, request);
 		assertTrue(response.getId() > 0, "successfully inserted");
 	}
 

@@ -44,7 +44,7 @@ class ReviewDeleteTest {
 		reviewDao.insert(review);
 		
 		//When
-		reviewService.deleteReview(review.getId());
+		reviewService.deleteReview(5, review.getId());
 		
 		//Then
 		assertFalse(reviewDao.selectById(review.getId())==null,"성공적으로 삭제 완료!");

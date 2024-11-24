@@ -55,16 +55,15 @@ public class UserController {
     		HttpServletResponse httpResponse,
     		@RequestBody LoginDto.RequestLoginDto request){
         LoginDto.ResponseLoginDto response = userService.login(request);
-        
-        Cookie accessTokenCookie = new Cookie("accessToken", response.getAccessToken());
-        Cookie refreshTokenCookie = new Cookie("refreshToken", response.getRefreshToken());
-        accessTokenCookie.setHttpOnly(true);
-        refreshTokenCookie.setHttpOnly(true);
-        accessTokenCookie.setPath("/");
-        refreshTokenCookie.setPath("/");
+
+        Cookie accessTokenCookie = setCookie("accessToken", response.getAccessToken(), true, "/");
+        Cookie refreshTokenCookie = setCookie("refreshToken", response.getRefreshToken(), true, "/");
+        Cookie authStateCookie = setCookie("isAuthenticated", "true", false, "/");
 
         httpResponse.addCookie(accessTokenCookie);
         httpResponse.addCookie(refreshTokenCookie);
+        httpResponse.addCookie(authStateCookie);
+
         return new BaseResponse<>(response);
     }
     
@@ -115,18 +114,16 @@ public class UserController {
     public BaseResponse logout(HttpServletResponse httpResponse, Authentication authentication){
         UserPrincipal userPrincipal = (UserPrincipal) authentication.getPrincipal();
 
-        // 쿠키 삭제
-        Cookie accessTokenCookie = new Cookie("accessToken", null);
-        Cookie refreshTokenCookie = new Cookie("refreshToken", null);
-        accessTokenCookie.setHttpOnly(true);
-        refreshTokenCookie.setHttpOnly(true);
-        accessTokenCookie.setPath("/");
-        refreshTokenCookie.setPath("/");
-        accessTokenCookie.setMaxAge(0); // 쿠키 삭제
-        refreshTokenCookie.setMaxAge(0); // 쿠키 삭제
+        Cookie accessTokenCookie = setCookie("accessToken", null, true, "/");
+        Cookie refreshTokenCookie = setCookie("refreshToken", null, true, "/");
+        Cookie authStateCookie = setCookie("isAuthenticated", "false", false, "/");
+
+        accessTokenCookie.setMaxAge(0);
+        refreshTokenCookie.setMaxAge(0);
 
         httpResponse.addCookie(accessTokenCookie);
         httpResponse.addCookie(refreshTokenCookie);
+        httpResponse.addCookie(authStateCookie);
 
         userService.logout(userPrincipal.getUserId());
         return new BaseResponse<>(BaseResponseStatus.SUCCESS);
@@ -139,20 +136,25 @@ public class UserController {
     public BaseResponse withdraw(HttpServletResponse httpResponse, Authentication authentication){
         UserPrincipal userPrincipal = (UserPrincipal) authentication.getPrincipal();
 
-        // 쿠키 삭제
-        Cookie accessTokenCookie = new Cookie("accessToken", null);
-        Cookie refreshTokenCookie = new Cookie("refreshToken", null);
-        accessTokenCookie.setHttpOnly(true);
-        refreshTokenCookie.setHttpOnly(true);
-        accessTokenCookie.setPath("/");
-        refreshTokenCookie.setPath("/");
-        accessTokenCookie.setMaxAge(0); // 쿠키 삭제
-        refreshTokenCookie.setMaxAge(0); // 쿠키 삭제
+        Cookie accessTokenCookie = setCookie("accessToken", null, true, "/");
+        Cookie refreshTokenCookie = setCookie("refreshToken", null, true, "/");
+        Cookie authStateCookie = setCookie("isAuthenticated", "false", false, "/");
+
+        accessTokenCookie.setMaxAge(0);
+        refreshTokenCookie.setMaxAge(0);
 
         httpResponse.addCookie(accessTokenCookie);
         httpResponse.addCookie(refreshTokenCookie);
+        httpResponse.addCookie(authStateCookie);
 
         userService.withdraw(userPrincipal.getUserId());
     	return new BaseResponse<>(BaseResponseStatus.SUCCESS);
+    }
+
+    private static Cookie setCookie(String name, String value, boolean httpOnly, String path){
+        Cookie cookie = new Cookie(name, value);
+        cookie.setHttpOnly(httpOnly);
+        cookie.setPath(path);
+        return cookie;
     }
 }

@@ -50,7 +50,7 @@ class ReviewUpdateTest {
 				.title("new Title")
 				.content("new Content")
 				.build();
-		reviewService.updateReview(updateRequest, originReview.getId());
+		reviewService.updateReview(5, updateRequest, originReview.getId());
 		
 		//THEN
 		Review updatedReview = reviewDao.selectById(originReview.getId())
