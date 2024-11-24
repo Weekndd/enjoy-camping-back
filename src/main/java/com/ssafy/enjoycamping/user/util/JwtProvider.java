@@ -1,7 +1,7 @@
 package com.ssafy.enjoycamping.user.util;
 
-import java.security.Key;
 import java.time.Duration;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 import java.util.Optional;
@@ -23,10 +23,6 @@ import org.springframework.web.context.request.ServletRequestAttributes;
 
 import com.ssafy.enjoycamping.auth.ParsedToken;
 import com.ssafy.enjoycamping.common.exception.BaseException;
-import com.ssafy.enjoycamping.common.exception.JwtAuthenticationException;
-import com.ssafy.enjoycamping.common.exception.UnauthorizedException;
-import com.ssafy.enjoycamping.common.model.TokenType;
-import com.ssafy.enjoycamping.common.response.BaseResponseStatus;
 
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.ExpiredJwtException;
@@ -38,7 +34,6 @@ import io.jsonwebtoken.security.Keys;
 import jakarta.annotation.PostConstruct;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
@@ -118,39 +113,27 @@ public class JwtProvider {
         REDIS_TEMPLATE.delete(userId);
     }
     
-    // 없앨 거
-	public int getAuthenticatedUserId(TokenType tokenType) throws BaseException {
-    	String token = getToken(); //헤더에서 토큰 가져옴
-    	JwtPayload payload = verifyToken(token); 
-    	Integer userId = payload.getId();
-    	TokenType nowTokenType = payload.getTokenType();
-    	
-    	if(nowTokenType != tokenType) { //현재 토큰 타입이 필요로 하는 토큰 타입과 맞지 않다면 에러
-    		throw new UnauthorizedException(BaseResponseStatus.INVALID_JWT);
-    	}
-    	
-    	if(tokenType == TokenType.REFRESH) verifyRefreshToken(token, userId);
+	public int getAuthenticatedUserId() throws BaseException {
+    	Optional<String>token = getAccessToken(); //쿠키에서 토큰 가져옴
+    	int userId =  Jwts.parser()
+    			.verifyWith(SECRET_KEY)
+    			.build()
+    			.parseSignedClaims(token.get())
+    			.getPayload()
+    			.get("id",Integer.class);
     	return userId;
     }
-    
-	// 없앨 거
-    private void verifyRefreshToken(String token, int userId) throws BaseException {
-    	String storedToken = REDIS_TEMPLATE.opsForValue().get(userId);
-
-        if (storedToken == null || !storedToken.equals(token)) {
-            throw new UnauthorizedException(BaseResponseStatus.INVALID_JWT);
-        }
-    }
-    
-    
-    //////////수정 후
-    public String getToken() throws BaseException {
+    private Optional<String> getAccessToken() throws BaseException {
         HttpServletRequest request = ((ServletRequestAttributes) RequestContextHolder.currentRequestAttributes()).getRequest();
-        String accessToken = request.getHeader("X-ACCESS-TOKEN");
-        return accessToken;
+        if (request.getCookies() == null) {
+            return Optional.empty();
+        }
+        return Arrays.stream(request.getCookies())
+                .filter(cookie -> "accessToken".equals(cookie.getName()))
+                .map(Cookie::getValue)
+                .findFirst();
     }
-
-
+    
     public boolean isValidToken(String token, boolean isRefreshToken) {
     	 try {
     		 Jwts.parser()
@@ -175,63 +158,8 @@ public class JwtProvider {
         return new UsernamePasswordAuthenticationToken(principal, "", authorities);
     }
     
-
-    private JwtPayload verifyToken(String token) throws BaseException {
-        try {
-            Jws<Claims> claimsJws = Jwts.parser()
-                    .verifyWith(SECRET_KEY).build()
-                    .parseSignedClaims(token);
-            String tokenType = claimsJws.getPayload().get("tokenType",String.class);
-            return new JwtPayload(
-            		claimsJws.getPayload().get("id", Integer.class),
-            		claimsJws.getPayload().getIssuedAt(),
-            		TokenType.valueOf(tokenType));
-        } catch (Exception e) {
-            throw e;
-        }
-    }
-    
-    // Refresh Token 검증 후 새 토큰 재발급
-    public TokenPair reissueTokens(String refreshToken) {
-    	//RefreshToken이 만료된 경우 예외발생
-    	try {
-    		isValidToken(refreshToken, true); //유효하지 않으면 에러발생
-    		
-    		int userId = getUserIdByToken(refreshToken); //페이로드를 만들기 위한 userId
-	        String storedToken = REDIS_TEMPLATE.opsForValue().get(userId);
-	        if(checkStoredRefreshToken(userId, refreshToken)) {
-//	        	throw new 
-	        }
-	        
-	        String newAccessToken = createAccessToken(JwtPayload.builder()
-					.id(userId)
-					.issuedAt(new Date())
-					.tokenType(TokenType.ACCESS)
-					.build());
-	        String newRefreshToken = createRefreshToken(JwtPayload.builder()
-					.id(userId)
-					.issuedAt(new Date())
-					.build());
-	        TokenPair tokenPair = new TokenPair(newAccessToken, newRefreshToken);
-	    	return tokenPair;
-    	} 
-    	catch (Exception e) {
-    		throw e;
-    	}
-    }
-    
-    
-    private int getUserIdByToken(String token) {
-    	Jws<Claims> claimsJws = Jwts.parser()
-                .verifyWith(SECRET_KEY)
-                .build()
-                .parseSignedClaims(token);
-    	int userId = Integer.parseInt(claimsJws.getPayload().getId());
-    	return userId;
-    }
-    
-    private boolean checkStoredRefreshToken(int userId, String refreshToken) {
-    	String storedToken = REDIS_TEMPLATE.opsForValue().get(userId);
+    public boolean checkStoredRefreshToken(String userId, String refreshToken) {
+    	String storedToken = REDIS_TEMPLATE.opsForValue().get(Integer.parseInt(userId));
     	if(refreshToken.equals(storedToken)) {
     		return true;
     	}
@@ -253,20 +181,8 @@ public class JwtProvider {
         }
     }
     
-    public Claims getClaims(String token) throws JwtException {
-        return (Claims) Jwts.parser()
-                .verifyWith(SECRET_KEY)
-                .build()
-                .parseSignedClaims(token);
-    }
-	
 	public void saveRefreshToken(int userId, String newRefreshToken) {
 		Duration ttl = Duration.ofMillis(REFRESH_TOKEN_EXPIRATION);
 		REDIS_TEMPLATE.opsForValue().set(userId, newRefreshToken, ttl);
 	}
-	
-	public String getStoredRefreshToken(int userId) {
-		return REDIS_TEMPLATE.opsForValue().get(userId);
-	}
-    
 }
