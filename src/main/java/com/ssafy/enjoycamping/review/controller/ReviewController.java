@@ -4,7 +4,9 @@ import java.io.IOException;
 import java.net.URL;
 import java.util.List;
 
+import com.ssafy.enjoycamping.auth.UserPrincipal;
 import com.ssafy.enjoycamping.review.dto.CreatePresignedUrlDto;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
@@ -87,9 +89,11 @@ public class ReviewController {
 		return new BaseResponse<>(reviews);
 	}
 	
-	@GetMapping("/users/{userId}")
-	public BaseResponse<List<ReviewDto>> getReivewsByUserId(@PathVariable int userId) {
-		List<ReviewDto> reviews = reviewService.getReviewsByUserId(userId);
+	@GetMapping("/users")
+	public BaseResponse<List<ReviewDto>> getReivewsByUserId(Authentication authentication) {
+		UserPrincipal userPrincipal = (UserPrincipal) authentication.getPrincipal();
+
+		List<ReviewDto> reviews = reviewService.getReviewsByUserId(userPrincipal.getUserId());
 		return new BaseResponse<>(reviews);
 	}
 	

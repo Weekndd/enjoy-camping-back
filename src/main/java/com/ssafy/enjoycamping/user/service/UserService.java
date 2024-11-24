@@ -5,10 +5,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import com.ssafy.enjoycamping.common.exception.BadRequestException;
-import com.ssafy.enjoycamping.common.exception.BaseException;
-import com.ssafy.enjoycamping.common.exception.JwtAuthenticationException;
-import com.ssafy.enjoycamping.common.exception.UnauthorizedException;
+import com.ssafy.enjoycamping.common.exception.*;
 import com.ssafy.enjoycamping.common.model.TokenType;
 import com.ssafy.enjoycamping.common.response.BaseResponseStatus;
 import com.ssafy.enjoycamping.trip.attraction.dto.AttractionDto;
@@ -60,8 +57,10 @@ public class UserService {
 
 	public LoginDto.ResponseLoginDto login(LoginDto.RequestLoginDto request) throws BaseException {
 		// DB에서 암호화된 이메일로 유저 정보 조회
-	    User user = userDao.selectActiveByEmail(EncryptionService.encrypt(request.getEmail()))
+		User user = userDao.selectByEmail(EncryptionService.encrypt(request.getEmail()))
 				.orElseThrow(() -> new BadRequestException(BaseResponseStatus.NOT_EXIST_EMAIL));
+
+		if(user.isDeleteFlag()) throw new BadRequestException(BaseResponseStatus.WITHDRAW_USER);
 
 		// 비밀번호 일치 여부 조회
 		if(!PasswordEncoder.matches(request.getPassword(), user.getPassword()))
@@ -122,12 +121,9 @@ public class UserService {
 				.build();
 	}
 
-	public ModifyPwdDto.ResponseModifyPwdDto modifyPassword(ModifyPwdDto.RequestModifyPwdDto request) throws BaseException {
-		int id = jwtProvider.getAuthenticatedUserId();
-
-		// JWT로 User 불러오기
-		User user = userDao.selectActiveById(id)
-				.orElseThrow(() -> new UnauthorizedException(BaseResponseStatus.INVALID_USER_JWT));
+	public ModifyPwdDto.ResponseModifyPwdDto modifyPassword(int userId, ModifyPwdDto.RequestModifyPwdDto request) throws BaseException {
+		User user = userDao.selectActiveById(userId)
+				.orElseThrow(() -> new ForbiddenException(BaseResponseStatus.INVALID_USER_JWT));
 
 		// 비밀번호 일치 여부 조회
 		if(!PasswordEncoder.matches(request.getPassword(), user.getPassword()))
@@ -143,25 +139,19 @@ public class UserService {
 				.build();
 	}
 
-	public void logout() throws BaseException {
-		int id = jwtProvider.getAuthenticatedUserId();
-
-		// JWT로 User 불러오기
+	public void logout(int id) throws BaseException {
 		User user = userDao.selectActiveById(id)
 				.orElseThrow(() -> new UnauthorizedException(BaseResponseStatus.INVALID_USER_JWT));
 
 		jwtProvider.deleteRefreshToken(id);
 	}
 
-	public void withdraw() throws BaseException {
-		int id = jwtProvider.getAuthenticatedUserId();
-
-		// JWT로 User 불러오기
+	public void withdraw(int id) throws BaseException {
 		User user = userDao.selectActiveById(id)
 				.orElseThrow(() -> new UnauthorizedException(BaseResponseStatus.INVALID_USER_JWT));
 
-		user.setDeleteFlag(true);
 		jwtProvider.deleteRefreshToken(id);
+		user.setDeleteFlag(true);
 		userDao.update(user);
 	}
 }
