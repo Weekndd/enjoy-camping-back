@@ -43,8 +43,13 @@ public class SecurityConfig {
                         "/campings/**",
                         "/attractions/**",
                         "/sidoguguns/**",
-                        "/contenttypes/**"
+                        "/contenttypes/**",
+                        "reviews/**"
                     ).permitAll()
+                .requestMatchers(HttpMethod.POST, "/reviews/**").authenticated()
+                .requestMatchers(HttpMethod.GET, "/reviews/users/**").authenticated()
+                .requestMatchers(HttpMethod.PATCH, "/reviews/**").authenticated()
+                .requestMatchers(HttpMethod.DELETE, "/reviews/**").authenticated()
                 .requestMatchers("/api/admin/**").hasRole("ADMIN") // ADMIN 권한 필요
                 .anyRequest().authenticated() // 나머지는 인증 필요
             )
