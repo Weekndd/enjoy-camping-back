@@ -112,8 +112,21 @@ public class UserController {
      * 로그아웃
      */
     @PostMapping("/logout")
-    public BaseResponse logout(Authentication authentication){
+    public BaseResponse logout(HttpServletResponse httpResponse, Authentication authentication){
         UserPrincipal userPrincipal = (UserPrincipal) authentication.getPrincipal();
+
+        // 쿠키 삭제
+        Cookie accessTokenCookie = new Cookie("accessToken", null);
+        Cookie refreshTokenCookie = new Cookie("refreshToken", null);
+        accessTokenCookie.setHttpOnly(true);
+        refreshTokenCookie.setHttpOnly(true);
+        accessTokenCookie.setPath("/");
+        refreshTokenCookie.setPath("/");
+        accessTokenCookie.setMaxAge(0); // 쿠키 삭제
+        refreshTokenCookie.setMaxAge(0); // 쿠키 삭제
+
+        httpResponse.addCookie(accessTokenCookie);
+        httpResponse.addCookie(refreshTokenCookie);
 
         userService.logout(userPrincipal.getUserId());
         return new BaseResponse<>(BaseResponseStatus.SUCCESS);
@@ -123,8 +136,21 @@ public class UserController {
      * 탈퇴
      */
     @PatchMapping("/delete")
-    public BaseResponse withdraw(Authentication authentication){
+    public BaseResponse withdraw(HttpServletResponse httpResponse, Authentication authentication){
         UserPrincipal userPrincipal = (UserPrincipal) authentication.getPrincipal();
+
+        // 쿠키 삭제
+        Cookie accessTokenCookie = new Cookie("accessToken", null);
+        Cookie refreshTokenCookie = new Cookie("refreshToken", null);
+        accessTokenCookie.setHttpOnly(true);
+        refreshTokenCookie.setHttpOnly(true);
+        accessTokenCookie.setPath("/");
+        refreshTokenCookie.setPath("/");
+        accessTokenCookie.setMaxAge(0); // 쿠키 삭제
+        refreshTokenCookie.setMaxAge(0); // 쿠키 삭제
+
+        httpResponse.addCookie(accessTokenCookie);
+        httpResponse.addCookie(refreshTokenCookie);
 
         userService.withdraw(userPrincipal.getUserId());
     	return new BaseResponse<>(BaseResponseStatus.SUCCESS);
