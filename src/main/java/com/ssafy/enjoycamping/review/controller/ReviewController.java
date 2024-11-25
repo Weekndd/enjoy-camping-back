@@ -4,8 +4,6 @@ import java.io.IOException;
 import java.net.URL;
 import java.util.List;
 
-import com.ssafy.enjoycamping.auth.UserPrincipal;
-import com.ssafy.enjoycamping.review.dto.CreatePresignedUrlDto;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -17,8 +15,12 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.ssafy.enjoycamping.auth.UserPrincipal;
+import com.ssafy.enjoycamping.common.exception.UnauthorizedException;
 import com.ssafy.enjoycamping.common.response.BaseResponse;
+import com.ssafy.enjoycamping.common.response.BaseResponseStatus;
 import com.ssafy.enjoycamping.common.util.PagingAndSorting;
+import com.ssafy.enjoycamping.review.dto.CreatePresignedUrlDto;
 import com.ssafy.enjoycamping.review.dto.CreateReviewDto;
 import com.ssafy.enjoycamping.review.dto.ReviewDto;
 import com.ssafy.enjoycamping.review.dto.UpdateReviewDto;
@@ -40,6 +42,8 @@ public class ReviewController {
 	public BaseResponse<CreateReviewDto.ResponseCreateReviewDto> createReview(
 			@RequestBody CreateReviewDto.RequestCreateReviewDto request,
 			Authentication authentication) {
+    	if(authentication == null) throw new UnauthorizedException(BaseResponseStatus.INVALID_USER_JWT);
+
 		UserPrincipal userPrincipal = (UserPrincipal) authentication.getPrincipal();
 
 		CreateReviewDto.ResponseCreateReviewDto response = reviewService.createReview(userPrincipal.getUserId(), request);
@@ -61,6 +65,8 @@ public class ReviewController {
 	
 	@DeleteMapping("/{index}")
 	public BaseResponse<Integer> deleteReview(@PathVariable int index, Authentication authentication) {
+    	if(authentication == null) throw new UnauthorizedException(BaseResponseStatus.INVALID_USER_JWT);
+		
 		UserPrincipal userPrincipal = (UserPrincipal) authentication.getPrincipal();
 
 		reviewService.deleteReview(userPrincipal.getUserId(), index);
@@ -69,6 +75,8 @@ public class ReviewController {
 	
 	@PatchMapping("/{index}")
 	public BaseResponse<ReviewDto> updateReview(@RequestBody UpdateReviewDto.RequestUpdateReviewDto request, @PathVariable int index, Authentication authentication) {
+    	if(authentication == null) throw new UnauthorizedException(BaseResponseStatus.INVALID_USER_JWT);
+
 		UserPrincipal userPrincipal = (UserPrincipal) authentication.getPrincipal();
 
 		ReviewDto review = reviewService.updateReview(userPrincipal.getUserId(), request, index);
@@ -97,6 +105,8 @@ public class ReviewController {
 	
 	@GetMapping("/users")
 	public BaseResponse<List<ReviewDto>> getReivewsByUserId(Authentication authentication) {
+    	if(authentication == null) throw new UnauthorizedException(BaseResponseStatus.INVALID_USER_JWT);
+
 		UserPrincipal userPrincipal = (UserPrincipal) authentication.getPrincipal();
 
 		List<ReviewDto> reviews = reviewService.getReviewsByUserId(userPrincipal.getUserId());

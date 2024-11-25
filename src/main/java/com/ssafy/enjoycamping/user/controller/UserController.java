@@ -2,30 +2,30 @@ package com.ssafy.enjoycamping.user.controller;
 
 import java.util.List;
 
-import com.ssafy.enjoycamping.auth.UserPrincipal;
-import com.ssafy.enjoycamping.common.response.BaseResponse;
-import com.ssafy.enjoycamping.common.response.BaseResponseStatus;
-import com.ssafy.enjoycamping.user.service.UserService;
-import io.swagger.v3.oas.annotations.tags.Tag;
-import jakarta.servlet.http.Cookie;
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
-
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
-import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.ssafy.enjoycamping.auth.UserPrincipal;
+import com.ssafy.enjoycamping.common.exception.UnauthorizedException;
+import com.ssafy.enjoycamping.common.response.BaseResponse;
+import com.ssafy.enjoycamping.common.response.BaseResponseStatus;
 import com.ssafy.enjoycamping.user.dto.FindPwdDto;
 import com.ssafy.enjoycamping.user.dto.JoinDto;
 import com.ssafy.enjoycamping.user.dto.LoginDto;
 import com.ssafy.enjoycamping.user.dto.ModifyPwdDto;
 import com.ssafy.enjoycamping.user.dto.UserDto;
+import com.ssafy.enjoycamping.user.service.UserService;
 
+import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.servlet.http.Cookie;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+import jakarta.validation.constraints.NotNull;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
@@ -90,6 +90,8 @@ public class UserController {
      */
     @GetMapping("/detail")
     public BaseResponse<UserDto> getUser(Authentication authentication){
+    	if(authentication == null) throw  new UnauthorizedException(BaseResponseStatus.INVALID_USER_JWT);
+
         UserPrincipal userPrincipal = (UserPrincipal) authentication.getPrincipal();
 
         UserDto user = userService.getUser(userPrincipal.getUserId());
@@ -101,6 +103,8 @@ public class UserController {
      */
     @PatchMapping("/updatePwd")
     public BaseResponse<ModifyPwdDto.ResponseModifyPwdDto> modifyPassword(Authentication authentication, @RequestBody ModifyPwdDto.RequestModifyPwdDto request){
+    	if(authentication == null) throw new UnauthorizedException(BaseResponseStatus.INVALID_USER_JWT);
+
         UserPrincipal userPrincipal = (UserPrincipal) authentication.getPrincipal();
 
         ModifyPwdDto.ResponseModifyPwdDto response = userService.modifyPassword(userPrincipal.getUserId(), request);
@@ -112,6 +116,8 @@ public class UserController {
      */
     @PostMapping("/logout")
     public BaseResponse logout(HttpServletResponse httpResponse, Authentication authentication){
+    	if(authentication == null) throw new UnauthorizedException(BaseResponseStatus.INVALID_USER_JWT);
+
         UserPrincipal userPrincipal = (UserPrincipal) authentication.getPrincipal();
 
         Cookie accessTokenCookie = setCookie("accessToken", null, true, "/");
