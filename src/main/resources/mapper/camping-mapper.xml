@@ -71,10 +71,10 @@
             OR introduction LIKE CONCAT('%', #{keyword}, '%'))
         </if>
         <if test="sidoCode != null and sidoCode != ''">
-            AND sido_code = #{sidoCode}
+            AND c.sido_code = #{sidoCode}
         </if>
         <if test="gugunCode != null and gugunCode != ''">
-            AND gugun_code = #{gugunCode}
+            AND c.gugun_code = #{gugunCode}
         </if>
         GROUP BY c.id
         <choose>
@@ -102,10 +102,10 @@
             OR introduction LIKE CONCAT('%', #{keyword}, '%'))
         </if>
         <if test="sidoCode != null and sidoCode != ''">
-            AND sido_code = #{sidoCode}
+            AND camping.sido_code = #{sidoCode}
         </if>
         <if test="gugunCode != null and gugunCode != ''">
-            AND gugun_code = #{gugunCode}
+            AND camping.gugun_code = #{gugunCode}
         </if>
     </select>
 
