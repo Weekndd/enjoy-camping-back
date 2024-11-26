@@ -4,9 +4,6 @@ import java.time.LocalDateTime;
 
 import org.apache.ibatis.type.Alias;
 
-import com.ssafy.enjoycamping.review.dto.UpdateReviewDto;
-import com.ssafy.enjoycamping.review.dto.UpdateReviewDto.RequestUpdateReviewDto;
-
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -31,10 +28,5 @@ public class Review {
 	private String content;
 	private LocalDateTime createdAt;
 	private LocalDateTime updatedAt;
-	
-	public void updateReview(RequestUpdateReviewDto updatedReview) {
-		this.title = updatedReview.getTitle();
-		this.content = updatedReview.getContent();
-	}
 }
 

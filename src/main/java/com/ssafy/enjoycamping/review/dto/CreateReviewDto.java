@@ -22,7 +22,7 @@ public class CreateReviewDto {
 		private String title;
 		private String content;
 		private Set<String> imageUrls;
-		
+
 		public Review toEntity(CampingDto camping, int userId) {
 			return Review.builder()
 					.writerId(userId)
@@ -34,7 +34,7 @@ public class CreateReviewDto {
 					.build();
 		}
 	}
-	
+
 	@ToString
 	@Getter
 	@Setter
@@ -42,5 +42,5 @@ public class CreateReviewDto {
 	public static class ResponseCreateReviewDto {
 		private int id;
 	}
-	
+
 }
