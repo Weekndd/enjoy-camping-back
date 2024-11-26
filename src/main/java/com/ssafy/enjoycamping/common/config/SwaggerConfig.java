@@ -46,6 +46,7 @@ public class SwaggerConfig {
                 new Tag().name("4. CAMPING").description("캠핑 API"),
                 new Tag().name("5. REVIEW").description("리뷰 API"),
                 new Tag().name("6. CONTENTTYPE").description("컨텐츠 타입 API"),
+                new Tag().name("7. SIDOGUGUN").description("시도구군 API"),
                 new Tag().name("* AI").description("AI API")
         );
     }
