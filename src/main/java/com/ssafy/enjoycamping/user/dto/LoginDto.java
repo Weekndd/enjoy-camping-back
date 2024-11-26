@@ -18,6 +18,7 @@ public class LoginDto {
 	@ToString
 	@Builder
 	public static class ResponseLoginDto {
+		private int userId;
 		private String accessToken;
 		private String refreshToken;
 	}
