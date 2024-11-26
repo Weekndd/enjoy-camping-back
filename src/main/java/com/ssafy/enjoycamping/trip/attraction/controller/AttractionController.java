@@ -41,8 +41,8 @@ public class AttractionController {
             @RequestParam(value = "contentType", required = false) List<Integer> contentType,
             @RequestParam(defaultValue = "1") int pageNo,
             @RequestParam(defaultValue = "9") int pageCnt,
-            @RequestParam(defaultValue = "title") PagingAndSorting.AttractionOrder order,
-            @RequestParam(defaultValue = "asc") PagingAndSorting.Sort sort){
+            @RequestParam(required = false) PagingAndSorting.AttractionOrder order,
+            @RequestParam(required = false) PagingAndSorting.Sort sort){
         PagingAndSorting pagingAndSorting = new PagingAndSorting(pageNo, pageCnt, order, sort);
         List<AttractionDto> attractions = attractionService.searchAttractions(keyword, sidoCode, gugunCode, contentType, pagingAndSorting);
         int totalCount = attractionService.countByCondition(keyword, sidoCode, gugunCode, contentType);

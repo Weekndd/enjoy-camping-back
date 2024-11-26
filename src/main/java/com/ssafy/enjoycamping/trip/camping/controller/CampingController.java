@@ -40,8 +40,8 @@ public class CampingController {
             @RequestParam(value = "gugun", required = false) Integer gugunCode,
             @RequestParam(defaultValue = "1") int pageNo,
             @RequestParam(defaultValue = "9") int pageCnt,
-            @RequestParam(defaultValue = "name") PagingAndSorting.CampingOrder order,
-            @RequestParam(defaultValue = "asc") PagingAndSorting.Sort sort){
+            @RequestParam(required = false) PagingAndSorting.CampingOrder order,
+            @RequestParam(required = false) PagingAndSorting.Sort sort){
         PagingAndSorting pagingAndSorting = new PagingAndSorting(pageNo, pageCnt, order, sort);
         List<CampingDto> campings = campingService.searchCampings(keyword, sidoCode, gugunCode, pagingAndSorting);
         int totalCount = campingService.countByCondition(keyword, sidoCode, gugunCode);

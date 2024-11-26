@@ -1,7 +1,10 @@
 package com.ssafy.enjoycamping.review.controller;
 
+import java.io.IOException;
+import java.net.URL;
 import java.util.List;
 
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
@@ -12,32 +15,45 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.ssafy.enjoycamping.auth.UserPrincipal;
+import com.ssafy.enjoycamping.common.exception.UnauthorizedException;
 import com.ssafy.enjoycamping.common.response.BaseResponse;
 import com.ssafy.enjoycamping.common.response.BaseResponseStatus;
 import com.ssafy.enjoycamping.common.util.PagingAndSorting;
+import com.ssafy.enjoycamping.review.dto.CreatePresignedUrlDto;
 import com.ssafy.enjoycamping.review.dto.CreateReviewDto;
 import com.ssafy.enjoycamping.review.dto.ReviewDto;
 import com.ssafy.enjoycamping.review.dto.UpdateReviewDto;
 import com.ssafy.enjoycamping.review.service.ReviewService;
 
 import io.swagger.v3.oas.annotations.tags.Tag;
+import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 @RestController
 @RequestMapping("/reviews")
 @Tag(name = "5. REVIEW")
+@AllArgsConstructor
 public class ReviewController {
 	private ReviewService reviewService;
 
-	public ReviewController(ReviewService reviewService) {
-		this.reviewService = reviewService;
-	}
-
 	@PostMapping
-	public BaseResponse<CreateReviewDto.ResponseCreateReviewDto> createReview(@RequestBody CreateReviewDto.RequestCreateReviewDto request) {
-		CreateReviewDto.ResponseCreateReviewDto response = reviewService.createReview(request);
+	public BaseResponse<CreateReviewDto.ResponseCreateReviewDto> createReview(
+			@RequestBody CreateReviewDto.RequestCreateReviewDto request,
+			Authentication authentication) {
+    	if(authentication == null) throw new UnauthorizedException(BaseResponseStatus.INVALID_USER_JWT);
+
+		UserPrincipal userPrincipal = (UserPrincipal) authentication.getPrincipal();
+
+		CreateReviewDto.ResponseCreateReviewDto response = reviewService.createReview(userPrincipal.getUserId(), request);
 		return new BaseResponse<>(response);
+	}
+	
+	@PostMapping("/images/presignedUrl")
+	public BaseResponse<URL> createImageUrl(@RequestBody CreatePresignedUrlDto dto) throws IOException {
+	    URL imageUrl = reviewService.createImageUrl(dto.getFileName(), dto.getContentType());
+	    return new BaseResponse<>(imageUrl);
 	}
 	
 	@GetMapping("/{id}")
@@ -47,21 +63,29 @@ public class ReviewController {
 	}
 	
 	
-	@DeleteMapping("/delete/{id}")
-	public BaseResponse<Integer> deleteReview(@PathVariable int id) {
-		reviewService.deleteReview(id);
-		return new BaseResponse<>(id);
+	@DeleteMapping("/{index}")
+	public BaseResponse<Integer> deleteReview(@PathVariable int index, Authentication authentication) {
+    	if(authentication == null) throw new UnauthorizedException(BaseResponseStatus.INVALID_USER_JWT);
+		
+		UserPrincipal userPrincipal = (UserPrincipal) authentication.getPrincipal();
+
+		reviewService.deleteReview(userPrincipal.getUserId(), index);
+		return new BaseResponse<>(index);
 	}
 	
-	@PatchMapping("/update/{id}")
-	public BaseResponse<ReviewDto> updateReview(@RequestBody UpdateReviewDto.RequestUpdateReviewDto request, @PathVariable int id) {
-		ReviewDto review = reviewService.updateReview(request, id);
+	@PatchMapping("/{index}")
+	public BaseResponse<ReviewDto> updateReview(@RequestBody UpdateReviewDto.RequestUpdateReviewDto request, @PathVariable int index, Authentication authentication) {
+    	if(authentication == null) throw new UnauthorizedException(BaseResponseStatus.INVALID_USER_JWT);
+
+		UserPrincipal userPrincipal = (UserPrincipal) authentication.getPrincipal();
+
+		ReviewDto review = reviewService.updateReview(userPrincipal.getUserId(), request, index);
 		return new BaseResponse<>(review);
 	}
 	
-	@GetMapping("/camping/{id}")
-	public BaseResponse<List<ReviewDto>> findReviewsByCampingId(@PathVariable int campingId) {
-		List<ReviewDto> reviews = reviewService.getReviewsByCampingId(campingId);
+	@GetMapping("/campings/{index}")
+	public BaseResponse<List<ReviewDto>> findReviewsByCampingId(@PathVariable int index) {
+		List<ReviewDto> reviews = reviewService.getReviewsByCampingId(index);
 		return new BaseResponse<>(reviews);
 	}
 	
@@ -79,9 +103,13 @@ public class ReviewController {
 		return new BaseResponse<>(reviews);
 	}
 	
-	@GetMapping("/users/{userId}")
-	public BaseResponse<List<ReviewDto>> getReivewsByUserId(@PathVariable int userId) {
-		List<ReviewDto> reviews = reviewService.getReviewsByUserId(userId);
+	@GetMapping("/users")
+	public BaseResponse<List<ReviewDto>> getReivewsByUserId(Authentication authentication) {
+    	if(authentication == null) throw new UnauthorizedException(BaseResponseStatus.INVALID_USER_JWT);
+
+		UserPrincipal userPrincipal = (UserPrincipal) authentication.getPrincipal();
+
+		List<ReviewDto> reviews = reviewService.getReviewsByUserId(userPrincipal.getUserId());
 		return new BaseResponse<>(reviews);
 	}
 	

@@ -1,11 +1,13 @@
 package com.ssafy.enjoycamping.review.dto;
 
-import com.ssafy.enjoycamping.review.entity.Review;
+import java.util.Set;
 
-import lombok.AllArgsConstructor;
+import com.ssafy.enjoycamping.review.entity.Review;
+import com.ssafy.enjoycamping.trip.camping.dto.CampingDto;
+import com.ssafy.enjoycamping.trip.camping.entity.Camping;
+
 import lombok.Builder;
 import lombok.Getter;
-import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.ToString;
 
@@ -17,24 +19,22 @@ public class CreateReviewDto {
 	@Builder
 	public static class RequestCreateReviewDto {
 		private int campingId;
-		private int writerId;
-		private int sidoCode;
-		private int gugunCode;
 		private String title;
 		private String content;
-		
-		public Review toEntity() {
+		private Set<String> imageUrls;
+
+		public Review toEntity(CampingDto camping, int userId) {
 			return Review.builder()
+					.writerId(userId)
+					.sidoCode(camping.getSidoCode())
+					.gugunCode(camping.getGugunCode())
 					.campingId(this.campingId)
-					.writerId(this.writerId)
-					.sidoCode(this.sidoCode)
-					.gugunCode(this.gugunCode)
 					.title(this.title)
 					.content(this.content)
 					.build();
 		}
 	}
-	
+
 	@ToString
 	@Getter
 	@Setter
@@ -42,5 +42,5 @@ public class CreateReviewDto {
 	public static class ResponseCreateReviewDto {
 		private int id;
 	}
-	
+
 }

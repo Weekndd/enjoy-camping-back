@@ -8,4 +8,6 @@ import java.util.List;
 public interface SidogugunService {
 	List<SidoDto> getSidos();
 	List<GugunDto> getGugunsBySidoCode(int sidoCode);
+	SidoDto getSido(int index);
+	GugunDto getGugun(int index, int sidoCode);
 }

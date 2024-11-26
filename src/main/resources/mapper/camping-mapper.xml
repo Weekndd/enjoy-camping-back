@@ -5,7 +5,7 @@
 <mapper namespace="com.ssafy.enjoycamping.trip.camping.dao.CampingDao">
 
     <!-- resultMap 설정 -->
-    <resultMap id="CampingResultMap" type="camping">
+    <resultMap id="CampingResultMap" type="com.ssafy.enjoycamping.trip.camping.dto.CampingDto">
         <id property="id" column="id"/>
         <result property="name" column="name"/>
         <result property="sidoName" column="sido_name"/>
@@ -19,6 +19,7 @@
         <result property="introduction" column="introduction"/>
         <result property="telephone" column="telephone"/>
         <result property="homepageUrl" column="homepage_url"/>
+        <result property="reviewCnt" column="review_cnt"/>
     </resultMap>
 
     <!-- CampingWithDistanceResultMap 설정 -->
@@ -37,78 +38,96 @@
         <result property="telephone" column="telephone"/>
         <result property="homepageUrl" column="homepage_url"/>
         <result property="distance" column="distance"/>
+        <result property="reviewCnt" column="review_cnt"/>
     </resultMap>
 
     <!-- ID로 캠핑장 조회 -->
     <select id="selectById" parameterType="Integer" resultMap="CampingResultMap">
-        SELECT * FROM camping WHERE id = #{id}
+        SELECT
+            c.id, c.name, c.sido_name, c.sido_code, c.gugun_name, c.gugun_code,
+            c.detail_address, c.latitude, c.longitude, c.image_url, c.introduction,
+            c.telephone, c.homepage_url,
+                (SELECT COUNT(*)
+                FROM review r
+                WHERE r.camping_id = id) AS
+            review_cnt
+        FROM camping c
+        WHERE id = #{id}
     </select>
 
     <!-- 동적 SQL을 사용하여 조건에 따른 캠핑장 검색 -->
     <select id="selectByCondition" resultMap="CampingResultMap">
-        SELECT * FROM camping
-        WHERE 1=1
-        <if test="keyword != null and keyword != ''">
-            AND (name LIKE CONCAT('%', #{keyword}, '%')
-                OR detail_address LIKE CONCAT('%', #{keyword}, '%')
-                OR introduction LIKE CONCAT('%', #{keyword}, '%'))
-        </if>
-        <if test="sidoCode != null and sidoCode != ''">
-            AND sido_code = #{sidoCode}
-        </if>
-        <if test="gugunCode != null and gugunCode != ''">
-            AND gugun_code = #{gugunCode}
-        </if>
-
-        <!-- 동적 정렬 처리 -->
-        <choose>
-            <when test="pagingAndSorting.order != null and pagingAndSorting.sort != null">
-                ORDER BY ${pagingAndSorting.order} ${pagingAndSorting.sort}
-            </when>
-            <otherwise>
-                ORDER BY name ASC  <!-- 기본 정렬 조건 설정 -->
-            </otherwise>
-        </choose>
-
-        <!-- 페이징 처리 -->
-        <if test="pagingAndSorting.pageCnt > 0">
-            LIMIT #{pagingAndSorting.pageCnt} OFFSET #{pagingAndSorting.offset}
-        </if>
-    </select>
-
-    <!-- 동적 조건에 따른 캠핑장 개수 조회 -->
-    <select id="countByCondition" resultType="int">
-        SELECT COUNT(*)
-        FROM camping
-        WHERE 1=1
+        SELECT
+        c.id, c.name, c.sido_name, c.sido_code, c.gugun_name, c.gugun_code,
+        c.detail_address, c.latitude, c.longitude, c.image_url, c.introduction,
+        c.telephone, c.homepage_url,
+        COUNT(r.id) AS review_cnt
+        FROM camping c
+        LEFT JOIN review r ON c.id = r.camping_id
+        WHERE image_url IS NOT NULL AND image_url != ''
         <if test="keyword != null and keyword != ''">
             AND (name LIKE CONCAT('%', #{keyword}, '%')
             OR detail_address LIKE CONCAT('%', #{keyword}, '%')
             OR introduction LIKE CONCAT('%', #{keyword}, '%'))
         </if>
         <if test="sidoCode != null and sidoCode != ''">
-            AND sido_code = #{sidoCode}
+            AND c.sido_code = #{sidoCode}
         </if>
         <if test="gugunCode != null and gugunCode != ''">
-            AND gugun_code = #{gugunCode}
+            AND c.gugun_code = #{gugunCode}
+        </if>
+        GROUP BY c.id
+        <choose>
+            <when test="pagingAndSorting.order != null and pagingAndSorting.sort != null">
+                ORDER BY ${pagingAndSorting.order} ${pagingAndSorting.sort}
+            </when>
+            <otherwise>
+                ORDER BY id ASC
+            </otherwise>
+        </choose>
+        <if test="pagingAndSorting.pageCnt > 0">
+            LIMIT #{pagingAndSorting.pageCnt} OFFSET #{pagingAndSorting.offset}
+        </if>
+    </select>
+
+
+    <!-- 동적 조건에 따른 캠핑장 개수 조회 -->
+    <select id="countByCondition" resultType="int">
+        SELECT COUNT(*)
+        FROM camping
+        WHERE image_url IS NOT NULL AND image_url != ''
+        <if test="keyword != null and keyword != ''">
+            AND (name LIKE CONCAT('%', #{keyword}, '%')
+            OR detail_address LIKE CONCAT('%', #{keyword}, '%')
+            OR introduction LIKE CONCAT('%', #{keyword}, '%'))
+        </if>
+        <if test="sidoCode != null and sidoCode != ''">
+            AND camping.sido_code = #{sidoCode}
+        </if>
+        <if test="gugunCode != null and gugunCode != ''">
+            AND camping.gugun_code = #{gugunCode}
         </if>
     </select>
 
     <!-- 같은 구군에 위치한 관광지와의 거리 순으로 조회 -->
     <select id="selectCampingsInSameGugun" resultMap="CampingWithDistanceResultMap">
         SELECT
-            c.id, c.name, c.sido_name, c.sido_code, c.gugun_name, c.gugun_code,
-            c.detail_address, c.latitude, c.longitude, c.image_url, c.introduction,
-            c.telephone, c.homepage_url,
-            CAST((6371 * ACOS(COS(RADIANS(a.latitude))
-            * COS(RADIANS(c.latitude))
-            * COS(RADIANS(c.longitude) - RADIANS(a.longitude))
-            + SIN(RADIANS(a.latitude))
-            * SIN(RADIANS(c.latitude)))) AS DOUBLE) AS distance
+        c.id, c.name, c.sido_name, c.sido_code, c.gugun_name, c.gugun_code,
+        c.detail_address, c.latitude, c.longitude, c.image_url, c.introduction,
+        c.telephone, c.homepage_url,
+        CAST((6371 * ACOS(COS(RADIANS(a.latitude))
+        * COS(RADIANS(c.latitude))
+        * COS(RADIANS(c.longitude) - RADIANS(a.longitude))
+        + SIN(RADIANS(a.latitude))
+        * SIN(RADIANS(c.latitude)))) AS DOUBLE) AS distance,
+        COUNT(r.id) AS review_cnt
         FROM camping c
         JOIN attractions a ON a.no = #{attractionId}
+        LEFT JOIN review r ON r.camping_id = c.id
         WHERE a.area_code = c.sido_code
         AND a.si_gun_gu_code = c.gugun_code
+        AND image_url IS NOT NULL AND image_url != ''
+        GROUP BY c.id
 
         <!-- 동적 정렬 처리 -->
         <choose>
@@ -126,6 +145,8 @@
         </if>
     </select>
 
+
+
     <!-- 같은 구군에 위치한 캠핑장의 개수 조회 -->
     <select id="countInSameGugun" resultType="int">
         SELECT COUNT(*)
@@ -133,5 +154,6 @@
         JOIN attractions a ON a.no = #{attractionId}
         WHERE a.area_code = c.sido_code
         AND a.si_gun_gu_code = c.gugun_code
+        AND image_url IS NOT NULL AND image_url != ''
     </select>
 </mapper>

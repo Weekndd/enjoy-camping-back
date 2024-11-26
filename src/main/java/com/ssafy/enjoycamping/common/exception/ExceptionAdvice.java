@@ -2,6 +2,8 @@ package com.ssafy.enjoycamping.common.exception;
 
 import com.ssafy.enjoycamping.common.response.BaseResponse;
 import com.ssafy.enjoycamping.common.response.BaseResponseStatus;
+
+import io.jsonwebtoken.ExpiredJwtException;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import jakarta.servlet.http.HttpServletRequest;
@@ -105,5 +107,13 @@ public class ExceptionAdvice {
         }
 
         return new BaseResponse<>(FAILED_TO_VALIDATION, errorBuilder.toString().stripTrailing());
+    }
+    
+    @ExceptionHandler(ExpiredJwtException.class)
+    @ApiResponse(responseCode = "403", description = "토큰 기간 만료", content = @Content)
+    @ResponseStatus(value = HttpStatus.FORBIDDEN)
+    public BaseResponse<BaseResponseStatus> expiredJwtException() {
+    	log.error("토큰 시간이 만료되었습니다.");
+    	return new BaseResponse<>(BaseResponseStatus.EXPIRED_JWT);
     }
 }

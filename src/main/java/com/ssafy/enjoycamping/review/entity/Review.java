@@ -2,6 +2,7 @@ package com.ssafy.enjoycamping.review.entity;
 
 import java.time.LocalDateTime;
 
+import com.ssafy.enjoycamping.review.dto.UpdateReviewDto;
 import org.apache.ibatis.type.Alias;
 
 import lombok.AllArgsConstructor;
@@ -28,5 +29,10 @@ public class Review {
 	private String content;
 	private LocalDateTime createdAt;
 	private LocalDateTime updatedAt;
+
+	public void updateReview(UpdateReviewDto.RequestUpdateReviewDto updatedReview) {
+		this.title = updatedReview.getTitle();
+		this.content = updatedReview.getContent();
+	}
 }
 

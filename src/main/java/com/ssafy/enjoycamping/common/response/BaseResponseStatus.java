@@ -13,22 +13,25 @@ public enum BaseResponseStatus {
     EMPTY_JWT(false, HttpStatus.UNAUTHORIZED.value(), "JWT를 입력해주세요."),
     NOT_AUTHORIZED(false, HttpStatus.UNAUTHORIZED.value(), "로그인이 필요합니다."),
     INVALID_JWT(false, HttpStatus.UNAUTHORIZED.value(), "유효하지 않은 JWT입니다."),
+    EXPIRED_JWT(false, HttpStatus.UNAUTHORIZED.value(), "만료된 JWT입니다."),
     INVALID_USER_JWT(false, HttpStatus.FORBIDDEN.value(), "권한이 없는 유저의 접근입니다."),
     FAILED_TO_VALIDATION(false, HttpStatus.BAD_REQUEST.value(), "값 검증에 실패하였습니다."),
     ALREADY_EXIST_EMAIL(false, HttpStatus.BAD_REQUEST.value(), "이미 존재하는 이메일입니다."),
     NOT_EXIST_EMAIL(false, HttpStatus.BAD_REQUEST.value(), "존재하지 않는 이메일입니다."),
     NOT_CORRECT_PASSWORD(false, HttpStatus.BAD_REQUEST.value(), "일치하지 않는 비밀번호입니다."),
-    NOT_EXIST_USER(false, HttpStatus.NOT_FOUND.value(), "존재하지 않는 유저입니다."),
-    WITHDRAW_USER(false, HttpStatus.BAD_REQUEST.value(), "탈퇴한 유저입니다."),
+    NOT_EXIST_USER(false, HttpStatus.NOT_FOUND.value(), "존재하지 않는 사용자입니다."),
+    WITHDRAW_USER(false, HttpStatus.BAD_REQUEST.value(), "탈퇴한 사용자입니다."),
     NOT_EXIST_CONTENTTYPE(false, HttpStatus.NOT_FOUND.value(), "존재하지 않는 컨텐츠 타입입니다."),
     NOT_EXIST_ATTRACTION(false, HttpStatus.NOT_FOUND.value(), "존재하지 않는 관광지입니다."),
     NOT_EXIST_CAMPING(false, HttpStatus.NOT_FOUND.value(), "존재하지 않는 캠핑장입니다."),
-    SIDO_GUGUN_PARSE_ERROR(false, HttpStatus.BAD_REQUEST.value(),"시도 혹은 구군이 잘못되었습니다. 입력값을 확인해주세요"),
+    NOT_EXIST_SIDO_GUGUN(false, HttpStatus.BAD_REQUEST.value(),"시도 혹은 구군이 잘못되었습니다. 입력값을 확인해주세요"),
     /**
      * Review
      */
     NOT_EXIST_REVIEW(false,HttpStatus.NOT_FOUND.value(),"존재하지 않는 리뷰입니다."),
-    
+    FAIL_DELETE_IMAGE(false,HttpStatus.INTERNAL_SERVER_ERROR.value(),"S3에 이미지 삭제를 실패하였습니다."),
+
+
 
     /**
      * 자유롭게 에러코드 추가

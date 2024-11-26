@@ -5,13 +5,14 @@ import java.util.Date;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import com.ssafy.enjoycamping.common.exception.BadRequestException;
-import com.ssafy.enjoycamping.common.exception.BaseException;
-import com.ssafy.enjoycamping.common.exception.UnauthorizedException;
+import com.ssafy.enjoycamping.common.exception.*;
+import com.ssafy.enjoycamping.common.model.TokenType;
 import com.ssafy.enjoycamping.common.response.BaseResponseStatus;
 import com.ssafy.enjoycamping.trip.attraction.dto.AttractionDto;
 import com.ssafy.enjoycamping.user.dto.*;
 import com.ssafy.enjoycamping.user.util.*;
+
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 
 import com.ssafy.enjoycamping.user.dao.UserDao;
@@ -22,8 +23,8 @@ import lombok.RequiredArgsConstructor;
 @Service
 @RequiredArgsConstructor
 public class UserService {
-	
 	private final UserDao userDao;
+	private final JwtProvider jwtProvider;
 
 	public JoinDto.ResponseJoinDto join(JoinDto.RequestJoinDto request) throws BaseException {
 		// 이메일 중복 확인
@@ -56,55 +57,32 @@ public class UserService {
 
 	public LoginDto.ResponseLoginDto login(LoginDto.RequestLoginDto request) throws BaseException {
 		// DB에서 암호화된 이메일로 유저 정보 조회
-	    User user = userDao.selectActiveByEmail(EncryptionService.encrypt(request.getEmail()))
+		User user = userDao.selectByEmail(EncryptionService.encrypt(request.getEmail()))
 				.orElseThrow(() -> new BadRequestException(BaseResponseStatus.NOT_EXIST_EMAIL));
+
+		if(user.isDeleteFlag()) throw new BadRequestException(BaseResponseStatus.WITHDRAW_USER);
 
 		// 비밀번호 일치 여부 조회
 		if(!PasswordEncoder.matches(request.getPassword(), user.getPassword()))
 			throw new BadRequestException(BaseResponseStatus.NOT_CORRECT_PASSWORD);
 
 		// access token 생성
-		String accessToken = JwtProvider.createAccessToken(JwtPayload.builder()
-						.id(user.getId())
-						.issuedAt(new Date())
-						.build());
-		// refresh token 생성
-		String refreshToken = JwtProvider.createRefreshToken(JwtPayload.builder()
+		String accessToken = jwtProvider.createAccessToken(JwtPayload.builder()
 				.id(user.getId())
 				.issuedAt(new Date())
+				.tokenType(TokenType.ACCESS)
 				.build());
-		// TODO: Refresh Token DB에 저장
-
-		return LoginDto.ResponseLoginDto.builder()
-				.accessToken(accessToken)
-				.refreshToken(refreshToken)
-				.build();
-	}
-
-	public LoginDto.ResponseLoginDto reissueToken() throws BaseException {
-		int id = JwtProvider.getUserId();
-
-		// JWT로 User 불러오기
-		User user = userDao.selectActiveById(id)
-				.orElseThrow(() -> new UnauthorizedException(BaseResponseStatus.INVALID_USER_JWT));
+		//Refresh token 생성
+		String refreshToken = jwtProvider.createRefreshToken(JwtPayload.builder()
+				.id(user.getId())
+				.issuedAt(new Date())
+				.tokenType(TokenType.REFRESH)
+				.build());
 		
-		// TODO: DB에서 User의 refresh token 조회해서 비교
-
-		// access token 재발급
-		String accessToken = JwtProvider.createAccessToken(JwtPayload.builder()
-				.id(user.getId())
-				.issuedAt(new Date())
-				.build());
-		// refresh token 재발급
-		String refreshToken = JwtProvider.createRefreshToken(JwtPayload.builder()
-				.id(user.getId())
-				.issuedAt(new Date())
-				.build());
-		// TODO: Refresh Token DB에 저장
-
 		return LoginDto.ResponseLoginDto.builder()
 				.accessToken(accessToken)
 				.refreshToken(refreshToken)
+				.userId(user.getId())
 				.build();
 	}
 
@@ -122,40 +100,31 @@ public class UserService {
 	}
 
 	public FindPwdDto.ResponseFindPwdDto findPassword(FindPwdDto.RequestFindPwdDto request) throws BaseException {
-		int id = JwtProvider.getUserId();
-
-		// JWT로 User 불러오기
-		User user = userDao.selectActiveById(id)
-				.orElseThrow(() -> new UnauthorizedException(BaseResponseStatus.INVALID_USER_JWT));
-
+		//email만 확인해서 뭔가 부실한거 같기도,,,
+		
 		// DB에서 암호화된 이메일로 유저 정보 조회
 		User emailUser = userDao.selectActiveByEmail(EncryptionService.encrypt(request.getEmail()))
 				.orElseThrow(() -> new BadRequestException(BaseResponseStatus.NOT_EXIST_EMAIL));
 
-		// JWT 유저 권한 확인
-		if(user.getId() != emailUser.getId()) throw new UnauthorizedException(BaseResponseStatus.INVALID_USER_JWT);
 		// 이름 확인
-		if(!user.getName().equals(emailUser.getName())) throw new BadRequestException(BaseResponseStatus.INPUT_PARSE_ERROR);
+		if(!request.getName().equals(emailUser.getName())) throw new BadRequestException(BaseResponseStatus.INPUT_PARSE_ERROR);
 
 		// 새로운 랜덤 비밀번호 생성
 	    String randomPassword = RandomPasswordBuilder.getRandomPassword(10);
 
 		// 비밀번호 단방향 해시 암호화
 		String hashedPassword = PasswordEncoder.encode(randomPassword);
-		user.setPassword(hashedPassword);
+		emailUser.setPassword(hashedPassword);
 
-		userDao.update(user);
+		userDao.update(emailUser);
 		return FindPwdDto.ResponseFindPwdDto.builder()
 				.password(randomPassword)
 				.build();
 	}
 
-	public ModifyPwdDto.ResponseModifyPwdDto modifyPassword(ModifyPwdDto.RequestModifyPwdDto request) throws BaseException {
-		int id = JwtProvider.getUserId();
-
-		// JWT로 User 불러오기
-		User user = userDao.selectActiveById(id)
-				.orElseThrow(() -> new UnauthorizedException(BaseResponseStatus.INVALID_USER_JWT));
+	public ModifyPwdDto.ResponseModifyPwdDto modifyPassword(int userId, ModifyPwdDto.RequestModifyPwdDto request) throws BaseException {
+		User user = userDao.selectActiveById(userId)
+				.orElseThrow(() -> new ForbiddenException(BaseResponseStatus.INVALID_USER_JWT));
 
 		// 비밀번호 일치 여부 조회
 		if(!PasswordEncoder.matches(request.getPassword(), user.getPassword()))
@@ -171,23 +140,18 @@ public class UserService {
 				.build();
 	}
 
-	public void logout() throws BaseException {
-		int id = JwtProvider.getUserId();
-
-		// JWT로 User 불러오기
+	public void logout(int id) throws BaseException {
 		User user = userDao.selectActiveById(id)
 				.orElseThrow(() -> new UnauthorizedException(BaseResponseStatus.INVALID_USER_JWT));
 
-		// TODO: Token 블랙리스트에 추가
+		jwtProvider.deleteRefreshToken(id);
 	}
 
-	public void withdraw() throws BaseException {
-		int id = JwtProvider.getUserId();
-
-		// JWT로 User 불러오기
+	public void withdraw(int id) throws BaseException {
 		User user = userDao.selectActiveById(id)
 				.orElseThrow(() -> new UnauthorizedException(BaseResponseStatus.INVALID_USER_JWT));
 
+		jwtProvider.deleteRefreshToken(id);
 		user.setDeleteFlag(true);
 		userDao.update(user);
 	}

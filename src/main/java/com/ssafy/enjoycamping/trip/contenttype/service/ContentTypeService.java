@@ -1,7 +1,11 @@
 package com.ssafy.enjoycamping.trip.contenttype.service;
 
+import com.ssafy.enjoycamping.common.exception.NotFoundException;
+import com.ssafy.enjoycamping.common.response.BaseResponseStatus;
 import com.ssafy.enjoycamping.trip.contenttype.dao.ContentTypeDao;
 import com.ssafy.enjoycamping.trip.contenttype.dto.ContentTypeDto;
+import com.ssafy.enjoycamping.trip.contenttype.entity.ContentType;
+
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -17,5 +21,11 @@ public class ContentTypeService {
 		return contentTypeDao.selectAll().stream()
 				.map(ContentTypeDto::fromEntity)
 				.collect(Collectors.toList());
+	}
+
+	public ContentTypeDto getContentType(int index){
+		ContentType contentType = contentTypeDao.selectById(index)
+				.orElseThrow(() -> new NotFoundException(BaseResponseStatus.NOT_EXIST_CONTENTTYPE));
+		return ContentTypeDto.fromEntity(contentType);
 	}
 }

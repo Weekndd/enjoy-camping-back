@@ -17,6 +17,7 @@
         <mapper resource="mapper/attraction-mapper.xml"/>
         <mapper resource="mapper/contenttype-mapper.xml"/>
         <mapper resource="mapper/review-mapper.xml"/>
+        <mapper resource="mapper/reviewImage-mapper.xml"/>
         <mapper resource="mapper/camping-mapper.xml"/>
         <mapper resource="mapper/sidoGugun-mapper.xml"/>
 	</mappers>
