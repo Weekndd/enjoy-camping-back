@@ -58,7 +58,7 @@ public class UserController {
 
         Cookie accessTokenCookie = setCookie("accessToken", response.getAccessToken(), true, "/");
         Cookie refreshTokenCookie = setCookie("refreshToken", response.getRefreshToken(), true, "/");
-        Cookie authStateCookie = setCookie("isAuthenticated", "true", false, "/");
+        Cookie authStateCookie = setCookie("userId", String.valueOf(response.getUserId()), false, "/");
 
         httpResponse.addCookie(accessTokenCookie);
         httpResponse.addCookie(refreshTokenCookie);
@@ -122,10 +122,11 @@ public class UserController {
 
         Cookie accessTokenCookie = setCookie("accessToken", null, true, "/");
         Cookie refreshTokenCookie = setCookie("refreshToken", null, true, "/");
-        Cookie authStateCookie = setCookie("isAuthenticated", "false", false, "/");
+        Cookie authStateCookie = setCookie("userId", null, false, "/");
 
         accessTokenCookie.setMaxAge(0);
         refreshTokenCookie.setMaxAge(0);
+        authStateCookie.setMaxAge(0);
 
         httpResponse.addCookie(accessTokenCookie);
         httpResponse.addCookie(refreshTokenCookie);
@@ -144,10 +145,11 @@ public class UserController {
 
         Cookie accessTokenCookie = setCookie("accessToken", null, true, "/");
         Cookie refreshTokenCookie = setCookie("refreshToken", null, true, "/");
-        Cookie authStateCookie = setCookie("isAuthenticated", "false", false, "/");
+        Cookie authStateCookie = setCookie("userId", null, false, "/");
 
         accessTokenCookie.setMaxAge(0);
         refreshTokenCookie.setMaxAge(0);
+        authStateCookie.setMaxAge(0);
 
         httpResponse.addCookie(accessTokenCookie);
         httpResponse.addCookie(refreshTokenCookie);

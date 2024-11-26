@@ -2,6 +2,7 @@ package com.ssafy.enjoycamping.trip.sidogugun.controller;
 
 import java.util.List;
 
+import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -17,6 +18,7 @@ import lombok.AllArgsConstructor;
 
 @RestController
 @RequestMapping("/sidoguguns")
+@Tag(name="7. SIDOGUGUN")
 @AllArgsConstructor
 public class SidogugunController {
 	private SidogugunService sidogugunService;

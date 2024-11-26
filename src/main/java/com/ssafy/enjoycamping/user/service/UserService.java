@@ -82,6 +82,7 @@ public class UserService {
 		return LoginDto.ResponseLoginDto.builder()
 				.accessToken(accessToken)
 				.refreshToken(refreshToken)
+				.userId(user.getId())
 				.build();
 	}
 
