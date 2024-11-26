@@ -1,6 +1,4 @@
-# EnjoyTrip
-
-본 프로젝트는 SSAFY 12기 Java 관통 프로젝트 제출을 위해 개발되었습니다.
+# EnjoyCamping 프로젝트 개요
 
 ## 팀 소개
 SSAFY 12기 서울 19반  
@@ -18,6 +16,9 @@ SSAFY 12기 서울 19반
 4. 주변 관광지 정보: 선택한 캠핑장 근처의 관광 명소를 가까운 순으로 조회할 수 있습니다.
 5. 사용자 관리: 개인화된 서비스를 위한 사용자 계정 시스템을 제공합니다.
 
+## 시스템 아키텍처
+![시스템 아키텍처](img/시스템 아키텍처.png)
+
 ## 데이터베이스 구조
 
 프로젝트는 다음과 같은 주요 테이블로 구성되어 있습니다:
@@ -32,77 +33,42 @@ SSAFY 12기 서울 19반
 
 ![erd](img/erd_v2.png)
 
-## 기능 명세서(API 명세서)
+## 클래스 다이어그램
+![클래스 다이어그램](img/클래스다이어그램.png)
 
+## 기능 명세서(API 명세서)
 ![api list](img/기능명세서.png)
 
 ## Use Case Diagram
+![usecase diagram](img/UseCaseDiagram.png)
 
-![usecasediagram](img/UseCaseDiagram.png)
+## 시연영상
+[SSAFY_서울19반_이지호_홍승찬_관통PJT](https://youtu.be/y6fViiD3lO4)
 
-## 페이지 구성
-### **HOME**
-- 슬라이드 이미지 (캠핑 사진들)
-    - View All Campsites 버튼
-    - 페이지네이션 (이전 / 다음)
-    - 캠핑장 조회
+## 프레젠테이션
+![1](img/1.png)
+![2](img/2.png)
+![3](img/3.png)
+![4](img/4.png)
+![5](img/5.png)
+![6(2)](img/6(2).png)
+![6](img/6.png)
+![7](img/7.png)
+![8](img/8.png)
+![9](img/9.png)
+![10](img/10.png)
+![11](img/11.png)
+![12](img/12.png)
+![13](img/13.png)
+![14](img/14.png)
+![15](img/15.png)
+![16](img/16.png)
+![17](img/17.png)
+![18](img/18.png)
+![19](img/19.png)
+![20](img/20.png)
+![21](img/21.png)
+![22](img/22.png)
+![23](img/23.png)
 
-![alt text](img/main.png)
-![alt text](img/main2.png)
 
----
-### **캠핑장 둘러보기**
-- 캠핑장 카드 리스트
-- 각 캠핑장 카드 정보
-    - 캠핑장 이름
-    - 위치 정보
-    - 한줄 소개
-    - 캠핑장 태그
-- 시/군/구 및 키워드로 검색
-
-![alt text](img/campsite.png)
-![alt text](img/campsite2.png)
-![alt text](img/campsite3.png)
-
----
-### **캠핑장 자세히 보기**
-- 캠핑장 자세한 정보
-- 캠핑장 위치 정보(지도)
-- 캠핑장 근처에 위치한 관광지들 거리 순으로 조회
-- 캠핑장 리뷰
-
-![alt text](img/campsiteDetail.png)
-![alt text](img/campsiteDetail2.png)
-![alt text](img/campsiteDetail3.png)
-
----
-### **관광지 둘러보기**
-- 관광지 카드 리스트
-- 각 관광지 카드 정보
-    - 관광지 이름
-    - 위치 정보
-    - 한줄 소개
-    - 관광지 컨텐츠 타입 태그
-- 시/군/구 및 키워드로 검색
-- 태그별 조회
-
-![alt text](img/attraction.png)
-![alt text](img/attraction2.png)
-
----
-### **관광지 자세히 보기**
-- 관광지 자세한 정보
-- 관광지 위치 정보(지도)
-- 관광지 근처에 위치한 캠핑장들 거리 순으로 조회
-
-![alt text](img/attractionDetail.png)
-![alt text](img/attractionDetail2.png)
-
----
-### **사용자 메뉴**
-- 회원가입
-  ![alt text](/img/join.png)
-- 로그인
-  ![alt text](/img/login.png)
-- 마이페이지
-  ![alt text](img/mypage.png)
